@@ -4,9 +4,12 @@
 #include "object.hpp"
 #include "point.hpp"
 
+class Renderer; // Forward declaration of Renderer
+
 class Line : public Object {
   public:
     Line(Point start, Point end);
+    ~Line() override = default; // Default destructor
 
     const Point getStart() const;
     const Point getEnd() const;
@@ -14,7 +17,7 @@ class Line : public Object {
     void setStart(Point newStart);
     void setEnd(Point newEnd);
 
-    void render() override;
+    void render(const Renderer& renderer) override;
 
   private:
     Point start, end;
