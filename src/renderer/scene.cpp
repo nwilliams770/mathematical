@@ -19,8 +19,8 @@ void Scene::clear() { objects.clear(); }
 
 void Scene::render()
 {
-  for (Object* obj : objects)
-  {
-    obj->render();
-  }
+  // for (Object* obj : objects)
+  // {
+  //   obj->render();
+  // }
 }
