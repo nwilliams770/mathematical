@@ -1,7 +1,7 @@
 #ifndef RENDERER_HPP
 #define RENDERER_HPP
 
-#include <ncurses.h>
+#include <SDL2/SDL.h>
 #include <vector>
 #include "point.hpp"
 
@@ -11,10 +11,11 @@ class Point; // Forward declaration of Point
 class Renderer {
   public:
     Renderer();
+    ~Renderer();
 
-    void init();
+    int init();
     void clear();
-    void flush();
+    void present();
 
     void renderPoint(int x, int y);
     void renderLine(int x1, int y1, int x2, int y2);
@@ -25,22 +26,25 @@ class Renderer {
     void enableGridLabels(bool enable);
 
     void drawGrid();
-
+    void handleEvents(bool& running);
   private:
-    WINDOW* renderWin; // Window for rendering
-    WINDOW* logWin;    // Window for logging
-    int width, height;
     void drawVerticalLine(int x, int y1, int y2);
     void drawHorizontalLine(int x1, int x2, int y);
     void drawDiagonalLine(int x1, int y1, int x2, int y2);
     void drawLineBresenham(int x1, int y1, int x2, int y2);
 
+    void setColor(const SDL_Color& color);
+
     // Debugging
     bool showGrid;
     bool showGridLabels;
 
-    void drawGridLabels();
+    SDL_Window* window;
+    SDL_Renderer* renderer;
+    int width;
+    int height;
 
+    void drawGridLabels();
 };
 
 #endif

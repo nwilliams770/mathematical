@@ -3,7 +3,7 @@ CC = g++
 # Compile flags, -Wall gives warnings
 CFLAGS = -std=c++11 -Wall
 # Linker flags
-LDFLAGS = -lncurses
+LDFLAGS = -lSDL2
 
 SRCDIR = src
 INCDIR = include

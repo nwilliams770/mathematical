@@ -21,8 +21,19 @@ int main(int argc, char* argv[])
     }
   }
 
-  renderer.init();
-  LOG("renderer initialized");
-  renderer.drawGrid();
-  LOG("grid drawn");
+  int initResult = renderer.init();
+  if (initResult != 0)
+  {
+    LOG("Renderer failed to initialize");
+    return initResult;
+  }
+
+  bool running = true;
+  while (running)
+  {
+    renderer.handleEvents(running);
+    renderer.clear();
+    renderer.drawGrid();
+    renderer.present();
+  }
 }

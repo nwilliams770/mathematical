@@ -2,17 +2,14 @@
 #define LOGGING_HPP
 
 #include <string>
+#include <iostream>
 
-#ifndef NDEBUG
-
-#include <ncurses.h>
-
-void initLogger(WINDOW* window);
 void logMessage(const std::string& msg);
 
-#define LOG(msg) logMessage(msg)
+#ifdef NDEBUG
+    #define LOG(msg) // No-op in release mode
 #else
-#define LOG(msg)
+    #define LOG(msg) logMessage(msg)
 #endif
 
 #endif

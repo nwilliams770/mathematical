@@ -1,50 +1,94 @@
 #include <algorithm>
 #include <cmath>
-#include <ncurses.h>
-#include <vector>
-#include <point.hpp>
+#include "logging.hpp"
 #include "renderer.hpp"
 #include "renderer_constants.hpp"
-#ifndef NDEBUG
-  #include "logging.hpp"
-  #include "logging_constants.hpp"
-#endif
 
-Renderer::Renderer(): showGrid(false), showGridLabels(false) {};
+Renderer::Renderer()
+  :
+    window(nullptr), renderer(nullptr),
+    width(RendererConstants::INITIAL_WINDOW_WIDTH),
+    height(RendererConstants::INITIAL_WINDOW_WIDTH),
+    showGrid(false), showGridLabels(false) {};
 
-void Renderer::init() {
-  initscr();
-  cbreak();
-  noecho();
-  start_color();
-  init_pair(1, COLOR_RED, COLOR_BLACK); // Example color pair
+Renderer::~Renderer()
+{
+  SDL_DestroyRenderer(renderer);
+  SDL_DestroyWindow(window);
+  SDL_Quit();
+}
 
-  // Define the height of the log window
-  #ifndef NDEBUG
-    const int logHeight = LoggingConstants::MAX_LOG_LINES;
-  #else
-    const int logHeight = 0;
-  #endif
+int Renderer::init() {
+  if (SDL_Init(SDL_INIT_VIDEO) != 0)
+  {
+    LOG("SDL_Init Error: " + std::string(SDL_GetError()));
+    return 1;
+  }
 
-  int renderHeight = LINES - logHeight;
+  window = SDL_CreateWindow(
+    "Mathematical",
+    SDL_WINDOWPOS_CENTERED,
+    SDL_WINDOWPOS_CENTERED,
+    width,
+    height,
+    SDL_WINDOW_RESIZABLE
+  );
+  if (window == nullptr)
+  {
+    LOG("SDL_CreateWindow Error: " + std::string(SDL_GetError()));
+    SDL_Quit();
+    return 1;
+  }
 
-  renderWin = newwin(renderHeight, COLS, 0, 0);
-  getmaxyx(renderWin, height, width); // Get size of rendering window
+  renderer = SDL_CreateRenderer(
+    window,
+    -1, // Selects the first rendering driver that supports the requested flags.
+    SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
+    // Uses hardware acceleration for rendering.
+    // Synchronizes the renderer's present function with the screen's refresh
+    // rate to avoid tearing.
+  );
+  if (renderer == nullptr)
+  {
+    SDL_DestroyWindow(window);
+    LOG("SDL_CreateRenderer Error: " + std::string(SDL_GetError()));
+    SDL_Quit();
+    return 1;
+  }
 
-  #ifndef NDEBUG
-        // Create the log window and initialize the logger
-        logWin = newwin(logHeight, COLS, renderHeight, 0);
-        initLogger(logWin);
-        wrefresh(logWin);
-  #endif
-
-  wrefresh(renderWin);
+  return 0; // Zero indicates success
 };
 
-void Renderer::clear() {};
-void Renderer::flush() {};
+void Renderer::handleEvents(bool& running)
+{
+  SDL_Event event;
+  while (SDL_PollEvent(&event))
+  {
+    if (event.type == SDL_QUIT)
+    {
+      running = false;
+      return;
+    }
+  }
+}
 
-void Renderer::renderPoint(int x, int y) { mvaddch(y, x, RendererConstants::POINT_SYMBOL); }
+void Renderer::clear()
+{
+  // TODO use const color
+  setColor({0, 0, 0, SDL_ALPHA_OPAQUE}); // Clear with black color
+  SDL_RenderClear(renderer);
+};
+
+void Renderer::present()
+{
+  SDL_RenderPresent(renderer);
+};
+
+void Renderer::setColor(const SDL_Color& color) {
+  SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+}
+
+void Renderer::renderPoint(int x, int y) { }
 
 void Renderer::renderLine(int x1, int y1, int x2, int y2)
 {
@@ -60,23 +104,19 @@ void Renderer::enableGridLabels(bool enable) { showGridLabels = enable; }
 
 void Renderer::drawGrid()
 {
-  if (!showGrid) return;
+	if (!showGrid) return;
 
-  // Draw Horizontals
-  for (int y = 0; y < height; y++) {
-    for (int x = 0; x < width; x++) {
-        mvwaddch(renderWin, y, x, ACS_HLINE);
-    }
+  setColor(RendererConstants::GRID_COLOR);
+
+  for (int x = 0; x < width; x += RendererConstants::SCALE)
+  {
+    SDL_RenderDrawLine(renderer, x, 0, x, height);
   }
 
-  // Draw Verticals
-  for (int x = 0; x < width; x++) {
-    for (int y = 0; y < height; y++) {
-        mvwaddch(renderWin, y, x, ACS_VLINE);
-    }
+  for (int y = 0; y < height; y += RendererConstants::SCALE)
+  {
+    SDL_RenderDrawLine(renderer, 0, y, width, y);
   }
-
-  wrefresh(renderWin);
 }
 
 void Renderer::drawVerticalLine(int x, int y1, int y2)
