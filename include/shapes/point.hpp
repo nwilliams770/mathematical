@@ -4,19 +4,17 @@
 #include "color.hpp"
 #include "object.hpp" // because it inherits needs to know full definition
 #include "json.hpp"
+#include "vec3.hpp"
 
 class Renderer; // Forward declaration of Renderer
 
 class Point : public Object {
   public:
-    Point(double x = 0, double y = 0, const Color& color = Color());
+    Point(float x = 0.0f, float y = 0.0f, float z = 0.0f, const Color& color = Color());
     ~Point() override = default; // Default destructor
 
-    const double getX() const;
-    const double getY() const;
-
-    void setX(double newX);
-    void setY(double newY);
+    Vec3 getPosition() const { return position; }
+    void setPosition(const Vec3& newPosition) { position = newPosition; }
 
     json toJSON() const override;
     void fromJSON(const json& j) override;
@@ -24,7 +22,7 @@ class Point : public Object {
     void render(const Renderer& renderer) override;
 
   private:
-    double x, y;
+    Vec3 position;
 };
 
 #endif

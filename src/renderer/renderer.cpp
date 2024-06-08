@@ -88,9 +88,8 @@ void Renderer::handleEvents(bool& running)
   }
 }
 
-void Renderer::renderPoint(int x, int y) const
+void Renderer::renderPoint(const Vec3& point) const
 {
-  setColor(RendererConstants::DEBUG_COLOR);
   int scaledX = x * RendererConstants::SCALE;
   int scaledY = y * RendererConstants::SCALE;
 

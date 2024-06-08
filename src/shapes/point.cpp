@@ -3,30 +3,25 @@
 #include "renderer.hpp"
 #include "logging.hpp"
 
-Point::Point(double x, double y, const Color& color) : Object(color), x(x), y(y) {}
-
-const double Point::getX() const { return x; }
-const double Point::getY() const { return y; }
-
-void Point::setX(double newX) { x = newX; }
-void Point::setY(double newY) { y = newY; }
+Point::Point(float x, float y, float z, const Color& color) : Object(color), position(x, y, z) {}
 
 json Point::toJSON() const
 {
   return json{
-    {JsonKeys::VERTICES, {{JsonKeys::X, x}, {JsonKeys::Y, y}}},
+    {JsonKeys::VERTICES, {{JsonKeys::X, position.x}, {JsonKeys::Y, position.y}, {JsonKeys::Z, position.z} }},
     {JsonKeys::COLOR, color.toJSON()},
   };
 }
 
 void Point::fromJSON(const json& j)
 {
-  x = j[JsonKeys::VERTICES][0][JsonKeys::X];
-  y = j[JsonKeys::VERTICES][0][JsonKeys::Y];
+  position.x = j[JsonKeys::VERTICES][0][JsonKeys::X];
+  position.y = j[JsonKeys::VERTICES][0][JsonKeys::Y];
+  position.z = j[JsonKeys::VERTICES][0][JsonKeys::Z];
   setColor(Color::fromJSON(j[JsonKeys::COLOR]));
 }
 
 void Point::render(const Renderer& renderer) {
   renderer.setColor(color);
-  renderer.renderPoint(x, y);
+  renderer.renderPoint(position.x, position.y, position.z);
 };

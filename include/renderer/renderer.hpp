@@ -18,7 +18,7 @@ class Renderer {
     void clear();
     void present();
 
-    void renderPoint(int x, int y) const;
+    void renderPoint(const Vec3& point) const;
     void renderLine(int x1, int y1, int x2, int y2) const;
     void renderPolygon(const std::vector<Point>& vertices) const;
     void setColor(const Color& color) const;
