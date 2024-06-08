@@ -3,6 +3,7 @@
 
 #include <SDL2/SDL.h>
 #include <vector>
+#include "color.hpp"
 #include "point.hpp"
 
 class Point; // Forward declaration of Point
@@ -17,9 +18,10 @@ class Renderer {
     void clear();
     void present();
 
-    void renderPoint(int x, int y);
-    void renderLine(int x1, int y1, int x2, int y2);
-    void renderPolygon(const std::vector<Point>& vertices);
+    void renderPoint(int x, int y) const;
+    void renderLine(int x1, int y1, int x2, int y2) const;
+    void renderPolygon(const std::vector<Point>& vertices) const;
+    void setColor(const Color& color) const;
 
     // Debugging
     void enableGrid(bool enable);
@@ -28,12 +30,11 @@ class Renderer {
     void drawGrid();
     void handleEvents(bool& running);
   private:
-    void drawVerticalLine(int x, int y1, int y2);
-    void drawHorizontalLine(int x1, int x2, int y);
-    void drawDiagonalLine(int x1, int y1, int x2, int y2);
-    void drawLineBresenham(int x1, int y1, int x2, int y2);
+    void drawVerticalLine(int x, int y1, int y2) const;
+    void drawHorizontalLine(int x1, int x2, int y) const;
+    void drawDiagonalLine(int x1, int y1, int x2, int y2) const;
+    void drawLineBresenham(int x1, int y1, int x2, int y2) const;
 
-    void setColor(const SDL_Color& color);
 
     // Debugging
     bool showGrid;

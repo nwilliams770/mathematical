@@ -1,24 +1,27 @@
 #ifndef OBJECT_HPP
 #define OBJECT_HPP
 
+#include "color.hpp"
+#include "json.hpp"
+
 class Renderer; // Forward declaration of Renderer
 // only referencing so just needs to know about its existence
 
 class Object {
   public:
-    Object();
-    virtual ~Object();
+    Object(const Color& color = Color()) : color(color) {};
+    virtual ~Object() {};
+
+    void setColor(const Color& newColor) { color = newColor; }
+    Color getColor() const { return color; }
+
+    virtual json toJSON() const = 0;
+    virtual void fromJSON(const json& j) = 0;
 
     virtual void render(const Renderer& renderer) = 0;
-};
 
-// Inline definitions
-// Inline Definitions: The inline keyword ensures that the constructor and
-// destructor definitions are included wherever the header file is included,
-// preventing multiple definition errors. Linker Resolution: By providing these
-// definitions, the linker can resolve calls to Object's constructor and
-// destructor, even though the class itself is abstract.
-inline Object::Object() {}
-inline Object::~Object() {}
+  protected:
+    Color color;
+};
 
 #endif

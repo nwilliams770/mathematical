@@ -19,7 +19,7 @@ Renderer::~Renderer()
 }
 
 int Renderer::init() {
-  if (SDL_Init(SDL_INIT_VIDEO) != 0)
+  if (SDL_Init(SDL_INIT_VIDEO) < 0)
   {
     LOG("SDL_Init Error: " + std::string(SDL_GetError()));
     return 1;
@@ -70,8 +70,9 @@ void Renderer::present()
   SDL_RenderPresent(renderer);
 };
 
-void Renderer::setColor(const SDL_Color& color) {
-  SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+void Renderer::setColor(const Color& color) const {
+  SDL_Color sdlColor = color.ToSDLColor();
+  SDL_SetRenderDrawColor(renderer, sdlColor.r, sdlColor.g, sdlColor.b, sdlColor.a);
 }
 
 void Renderer::handleEvents(bool& running)
@@ -87,7 +88,7 @@ void Renderer::handleEvents(bool& running)
   }
 }
 
-void Renderer::renderPoint(int x, int y)
+void Renderer::renderPoint(int x, int y) const
 {
   setColor(RendererConstants::DEBUG_COLOR);
   int scaledX = x * RendererConstants::SCALE;
@@ -99,13 +100,10 @@ void Renderer::renderPoint(int x, int y)
   rect.w = RendererConstants::SCALE;
   rect.h = RendererConstants::SCALE;
   SDL_RenderFillRect(renderer, &rect);
-
 }
 
-void Renderer::renderLine(int x1, int y1, int x2, int y2)
+void Renderer::renderLine(int x1, int y1, int x2, int y2) const
 {
-  // detect horizontal, vertical, diagnoal
-  drawLineBresenham(x1, y1, x2, y2);
   if (x1 == x2)
   {
     drawVerticalLine(x1, y1, y2);
@@ -124,7 +122,7 @@ void Renderer::renderLine(int x1, int y1, int x2, int y2)
   }
 }
 
-void Renderer::renderPolygon(const std::vector<Point>& vertices) {};
+void Renderer::renderPolygon(const std::vector<Point>& vertices) const {};
 
 void Renderer::enableGrid(bool enable) { showGrid = enable; }
 void Renderer::enableGridLabels(bool enable) { showGridLabels = enable; }
@@ -146,7 +144,7 @@ void Renderer::drawGrid()
   }
 }
 
-void Renderer::drawVerticalLine(int x, int y1, int y2)
+void Renderer::drawVerticalLine(int x, int y1, int y2) const
 {
   if (y1 > y2) std::swap(y1, y2);
   for (int y = y1; y < y2; y++)
@@ -155,7 +153,7 @@ void Renderer::drawVerticalLine(int x, int y1, int y2)
   };
 }
 
-void Renderer::drawHorizontalLine(int x1, int x2, int y)
+void Renderer::drawHorizontalLine(int x1, int x2, int y) const
 {
   if (x1 > x2) std::swap(x1, x2);
   for (int x = x1; x < x2; x++)
@@ -164,7 +162,7 @@ void Renderer::drawHorizontalLine(int x1, int x2, int y)
   }
 };
 
-void Renderer::drawDiagonalLine(int x1, int y1, int x2, int y2)
+void Renderer::drawDiagonalLine(int x1, int y1, int x2, int y2) const
 {
   int dx = (x2 > x1) ? 1 : -1;
   int dy = (y2 > y1) ? 1 : -1;
@@ -178,47 +176,34 @@ void Renderer::drawDiagonalLine(int x1, int y1, int x2, int y2)
   renderPoint(x1, y1);
 };
 
-void Renderer::drawLineBresenham(int x1, int y1, int x2, int y2) {
+void Renderer::drawLineBresenham(int x1, int y1, int x2, int y2) const {
   int dx = abs(x2 - x1);
-  int dy = abs(y2 - y1);
-  float error = 0.5f;
-  int x = x1;
-  int y = y1;
-  int stepX = dx > 0 ? 1 : -1;
-  int stepY = dy > 0 ? 1 : -1;
+  int dy = -abs(y2 - y1);
+  int stepX = x1 < x2 ? 1 : -1;
+  int stepY = y1 < y2 ? 1 : -1;
+  int error = dx + dy;
 
-
-  if (dx > dy)
+  while (true)
   {
+    renderPoint(x1, y1);
 
-    float m = static_cast<float>(dx) / static_cast<float>(dy);
-    while (x < x2)
+    if (x1 == x2 && y1 == y2) break;
+
+    int e2 = 2 * error;
+    if (e2 >= dy)
     {
-      renderPoint(x,y);
-      x += stepX;
-      error += m; // how much change in y for each one change in x
-      if (error >= 0.5f) // 0.5 represents a half-pixel here?
-      {
-        y += stepY;
-        error -= 1;
-      }
+      if (x1 == x2) break;
+      error += dy;
+      x1 += stepX;
     }
-    renderPoint(x,y);
-  } else {
-    float m = static_cast<float>(dy) / static_cast<float>(dx);
-    while (y < y2)
+
+    if (e2 <= dx)
     {
-      renderPoint(x,y);
-      y += stepY;
-      error += m; // how much change in y for each one change in x
-      if (error >= 0.5f) // 0.5 represents a half-pixel here?
-      {
-        x += stepX;
-        error -= 1;
-      }
+      if (y1 == y2) break;
+      error += dx;
+      y1 += stepY;
     }
   }
-  renderPoint(x,y);
 };
 
 

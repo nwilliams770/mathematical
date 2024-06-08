@@ -8,7 +8,7 @@ class Renderer; // Forward declaration of Renderer
 
 class Line : public Object {
   public:
-    Line(Point start, Point end);
+    Line(Point start = Point(), Point end = Point());
     ~Line() override = default; // Default destructor
 
     const Point getStart() const;
@@ -16,6 +16,9 @@ class Line : public Object {
 
     void setStart(Point newStart);
     void setEnd(Point newEnd);
+
+    json toJSON() const override;
+    void fromJSON(const json& j) override;
 
     void render(const Renderer& renderer) override;
 

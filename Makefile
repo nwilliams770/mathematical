@@ -1,7 +1,7 @@
 # Compiler
 CC = g++
 # Compile flags, -Wall gives warnings
-CFLAGS = -std=c++11 -Wall
+CFLAGS = -std=c++17 -Wall
 # Linker flags
 LDFLAGS = -lSDL2
 
@@ -12,6 +12,7 @@ BINDIR = bin
 
 # Find all subdirectories in INCDIR
 INCLUDE_DIRS = $(shell find $(INCDIR) -type d -exec echo -I{} \;)
+INCLUDE_DIRS += -I/usr/local/include
 
 # Gather all .cpp files in SRCDIR and its subdirectories
 SOURCES = $(shell find $(SRCDIR) -name '*.cpp')
