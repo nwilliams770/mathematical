@@ -5,14 +5,14 @@
 
 namespace Options {
   const std::string SHOW_GRID = "--grid";
-  const std::string SHOW_GRID_LABELS = "--grid-labels";
   const std::string LOAD_FROM_PATH = "--loadfrompath";
+  const std::string RENDER_BOUNDING_BOXES = "--renderboundingboxes";
 
   enum class Flag {
     None,
     Grid,
-    GridLabels,
-    LoadFromPath
+    LoadFromPath,
+    RenderBoundingBoxes,
   };
 }
 

@@ -12,6 +12,14 @@ class Vec3
 
     Vec3(float x = 0.0f, float y = 0.0f, float z = 0.0f ) : x(x), y(y), z(z) {};
 
+    Vec3 cross(const Vec3& other) const {
+      return Vec3(
+        y * other.z - z * other.y,
+        z * other.x - x * other.z,
+        x * other.y - y * other.x
+      );
+    }
+
     Vec3 operator+(const Vec3& other) const
     {
       return Vec3(x + other.x, y + other.y, z + other.z);
@@ -35,6 +43,24 @@ class Vec3
       return Vec3(x / scalar, y / scalar, z / scalar);
     }
 
+    Vec3& operator+=(const Vec3& other)
+    {
+      x += other.x;
+      y += other.y;
+      z += other.z;
+
+      return *this;
+    }
+
+    Vec3& operator-=(const Vec3& other)
+    {
+      x -= other.x;
+      y -= other.y;
+      z -= other.z;
+
+      return *this;
+    }
+
     Vec3& normalize()
     {
       float magnitude = std::sqrt(x * x + y * y + z * z);
@@ -47,6 +73,18 @@ class Vec3
         LOG("Attempted to normalize a zero-length vector");
       }
       return *this;
+    }
+
+    Vec3 normalized() const
+    {
+      float magnitude = std::sqrt(x * x + y * y + z * z);
+      if (magnitude > 0)
+      {
+        return Vec3(x / magnitude, y / magnitude, z / magnitude);
+      } else {
+        LOG("Attempted to normalize a zero-length vector");
+        return Vec3();
+      }
     }
 };
 

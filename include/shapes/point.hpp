@@ -4,9 +4,10 @@
 #include "color.hpp"
 #include "object.hpp" // because it inherits needs to know full definition
 #include "json.hpp"
-#include "vec3.hpp"
 
-class Renderer; // Forward declaration of Renderer
+class Renderer; // Forward declaration
+class Vec3; // Forward declaration
+class RenderOptions; // Forward declaration
 
 class Point : public Object {
   public:
@@ -16,10 +17,13 @@ class Point : public Object {
     Vec3 getPosition() const { return position; }
     void setPosition(const Vec3& newPosition) { position = newPosition; }
 
+    Vec3 getMin() const override;
+    Vec3 getMax() const override;
+
     json toJSON() const override;
     void fromJSON(const json& j) override;
 
-    void render(const Renderer& renderer) override;
+    void render(const Renderer& renderer, const RenderOptions& options) override;
 
   private:
     Vec3 position;

@@ -6,28 +6,32 @@
 #include "save_data.hpp"
 #include "scene_serializer.hpp"
 #include "renderer_constants.hpp"
+#include "render_options.hpp"
 
 int main(int argc, char* argv[])
 {
   Renderer renderer;
   Scene scene(renderer);
   std::string loadPath;
+  RenderOptions options;
+
   std::vector<Options::Flag> flags = OptionsUtility::parseCommandLineArguments(argc, argv);
   for (const auto& flag : flags)
   {
     switch(flag)
     {
+      // TODO: Make this better
       case(Options::Flag::Grid):
         LOG("enabling grid");
         renderer.enableGrid(true);
         break;
-      case(Options::Flag::GridLabels):
-        renderer.enableGridLabels(true);
-        break;
       case(Options::Flag::LoadFromPath):
         loadPath = OptionsUtility::getOptionValue(argc, argv, Options::LOAD_FROM_PATH);
         LOG("Load path extracted: " + loadPath);
-
+      case(Options::Flag::RenderBoundingBoxes):
+        LOG("render bounding boxes");
+        options.renderBoundingBoxes = true;
+        break;
     }
   }
 
@@ -48,9 +52,6 @@ int main(int argc, char* argv[])
     }
   }
 
-  Point* point = new Point(5, 5, RendererConstants::DEBUG_COLOR);
-  scene.addObject(point);
-
   int initResult = renderer.init();
   LOG("Renderer initialized");
   if (initResult != 0)
@@ -64,10 +65,7 @@ int main(int argc, char* argv[])
   {
     renderer.handleEvents(running);
     renderer.clear();
-    scene.render();
-    renderer.drawGrid();
-    renderer.setColor(RendererConstants::DEBUG_COLOR);
-    renderer.renderPoint(0, 0);
+    scene.render(options);
     renderer.present();
   }
   LOG("Exiting main function");

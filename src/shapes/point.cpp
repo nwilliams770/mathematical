@@ -2,8 +2,13 @@
 #include "point.hpp"
 #include "renderer.hpp"
 #include "logging.hpp"
+#include "vec3.hpp"
 
 Point::Point(float x, float y, float z, const Color& color) : Object(color), position(x, y, z) {}
+
+Vec3 Point::getMin() const { return position; }
+
+Vec3 Point::getMax() const { return position; }
 
 json Point::toJSON() const
 {
@@ -21,7 +26,8 @@ void Point::fromJSON(const json& j)
   setColor(Color::fromJSON(j[JsonKeys::COLOR]));
 }
 
-void Point::render(const Renderer& renderer) {
+void Point::render(const Renderer& renderer, const RenderOptions& options) {
   renderer.setColor(color);
-  renderer.renderPoint(position.x, position.y, position.z);
+  renderer.renderPoint(position);
+  renderBoundingBox(renderer, options);
 };

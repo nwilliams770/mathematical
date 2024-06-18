@@ -4,24 +4,28 @@
 #include <vector>
 #include "object.hpp"
 
-class Point; // Forward declaration of Renderer
-class Renderer; // Forward declaration of Renderer
+class Vec3; // Forward declaration
+class Renderer; // Forward declaration
+class RenderOptions; // Forward declaration
 
 class Polygon : public Object {
   public:
-    Polygon(const std::vector<Point>& points = {});
+    Polygon(const std::vector<Vec3>& points = {});
     ~Polygon() override = default; // Default destructor
 
-    const std::vector<Point>& getPoints() const;
-    void setPoints(const std::vector<Point>& newPoints);
+    const std::vector<Vec3>& getPoints() const;
+    void setPoints(const std::vector<Vec3>& newPoints);
+
+    Vec3 getMin() const override;
+    Vec3 getMax() const override;
 
     json toJSON() const override;
     void fromJSON(const json& j) override;
 
-    void render(const Renderer& renderer) override;
+    void render(const Renderer& renderer, const RenderOptions& options) override;
 
   private:
-    std::vector<Point> points;
+    std::vector<Vec3> points;
     // TODO: remove?
     int pointCount;
 };

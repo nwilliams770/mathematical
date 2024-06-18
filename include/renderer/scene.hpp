@@ -4,6 +4,7 @@
 #include <vector>
 #include "json.hpp"
 #include "object.hpp"
+#include "render_options.hpp"
 
 class Scene {
   public:
@@ -19,7 +20,7 @@ class Scene {
     std::string getName() const;
 
     void clear();
-    void render();
+    void render(const RenderOptions& options);
 
     json toJSON() const;
     void fromJSON(const json& j);

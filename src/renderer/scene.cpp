@@ -103,10 +103,10 @@ void Scene::clear()
   LOG("Scene cleared");
 }
 
-void Scene::render()
+void Scene::render(const RenderOptions& options)
 {
   for (Object* obj : objects)
   {
-    obj->render(renderer);
+    obj->render(renderer, options);
   }
 }

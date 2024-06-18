@@ -12,6 +12,7 @@ json SaveData::toJSON() const
   LOG("SaveData toJSON called");
   json j;
   j[JsonKeys::SCENE] = scene.toJSON();
+  return j;
 }
 
 void SaveData::fromJSON(const json& j)

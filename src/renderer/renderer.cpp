@@ -4,12 +4,14 @@
 #include "renderer.hpp"
 #include "renderer_constants.hpp"
 
+float Renderer::focalLength = 100.0f;
+
 Renderer::Renderer()
   :
     window(nullptr), renderer(nullptr),
     width(RendererConstants::INITIAL_WINDOW_WIDTH),
     height(RendererConstants::INITIAL_WINDOW_WIDTH),
-    showGrid(false), showGridLabels(false) {};
+    showGrid(false) {};
 
 Renderer::~Renderer()
 {
@@ -88,21 +90,37 @@ void Renderer::handleEvents(bool& running)
   }
 }
 
+std::pair<int, int> Renderer::projectTo2D(const Vec3& point) {
+  // 'simple' or 'weak' perspective projection
+  float perspectiveX = point.x / (point.z / focalLength + 1);
+  float perspectiveY = point.y / (point.z / focalLength + 1);
+
+  int scaledX = static_cast<int>(perspectiveX * RendererConstants::SCALE_FLOAT);
+  int scaledY = static_cast<int>(perspectiveY * RendererConstants::SCALE_FLOAT);
+
+  return {scaledX, scaledY};
+}
+
 void Renderer::renderPoint(const Vec3& point) const
 {
-  int scaledX = x * RendererConstants::SCALE;
-  int scaledY = y * RendererConstants::SCALE;
+  auto [x, y] = projectTo2D(point);
+  drawPoint(x, y);
+}
 
+void Renderer::drawPoint(int x, int y) const
+{
   SDL_Rect rect;
-  rect.x = scaledX;
-  rect.y = scaledY;
-  rect.w = RendererConstants::SCALE;
-  rect.h = RendererConstants::SCALE;
+  rect.x = x;
+  rect.y = y;
+  rect.w = static_cast<int>(RendererConstants::SCALE_FLOAT);
+  rect.h = static_cast<int>(RendererConstants::SCALE_FLOAT);
   SDL_RenderFillRect(renderer, &rect);
 }
 
-void Renderer::renderLine(int x1, int y1, int x2, int y2) const
+void Renderer::renderLine(const Vec3& start, const Vec3& end) const
 {
+  auto [x1, y1] = projectTo2D(start);
+  auto [x2, y2] = projectTo2D(end);
   if (x1 == x2)
   {
     drawVerticalLine(x1, y1, y2);
@@ -121,10 +139,17 @@ void Renderer::renderLine(int x1, int y1, int x2, int y2) const
   }
 }
 
-void Renderer::renderPolygon(const std::vector<Point>& vertices) const {};
+void Renderer::renderPolygon(const std::vector<Vec3>& vertices) const
+{
+  for (size_t i = 0; i < vertices.size(); ++i)
+  {
+    const Vec3& start = vertices[i];
+    const Vec3& end = vertices[(i + 1) % vertices.size()];
+    renderLine(start, end);
+  }
+};
 
 void Renderer::enableGrid(bool enable) { showGrid = enable; }
-void Renderer::enableGridLabels(bool enable) { showGridLabels = enable; }
 
 void Renderer::drawGrid()
 {
@@ -148,7 +173,7 @@ void Renderer::drawVerticalLine(int x, int y1, int y2) const
   if (y1 > y2) std::swap(y1, y2);
   for (int y = y1; y < y2; y++)
   {
-    renderPoint(x, y);
+    drawPoint(x, y);
   };
 }
 
@@ -157,7 +182,7 @@ void Renderer::drawHorizontalLine(int x1, int x2, int y) const
   if (x1 > x2) std::swap(x1, x2);
   for (int x = x1; x < x2; x++)
   {
-    renderPoint(x, y);
+    drawPoint(x, y);
   }
 };
 
@@ -168,11 +193,11 @@ void Renderer::drawDiagonalLine(int x1, int y1, int x2, int y2) const
 
   while (x1 != x2 && y1 != y2)
   {
-    renderPoint(x1, y1);
+    drawPoint(x1, y1);
     x1 += dx;
     y1 += dy;
   }
-  renderPoint(x1, y1);
+  drawPoint(x1, y1);
 };
 
 void Renderer::drawLineBresenham(int x1, int y1, int x2, int y2) const {
@@ -184,7 +209,7 @@ void Renderer::drawLineBresenham(int x1, int y1, int x2, int y2) const {
 
   while (true)
   {
-    renderPoint(x1, y1);
+    drawPoint(x1, y1);
 
     if (x1 == x2 && y1 == y2) break;
 

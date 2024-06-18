@@ -3,6 +3,7 @@
 
 #include "color.hpp"
 #include "json.hpp"
+#include "render_options.hpp"
 
 class Renderer; // Forward declaration of Renderer
 // only referencing so just needs to know about its existence
@@ -18,10 +19,16 @@ class Object {
     virtual json toJSON() const = 0;
     virtual void fromJSON(const json& j) = 0;
 
-    virtual void render(const Renderer& renderer) = 0;
+    virtual void render(const Renderer& renderer, const RenderOptions& options) = 0;
+
+    virtual Vec3 getMin() const = 0;
+    virtual Vec3 getMax() const = 0;
 
   protected:
     Color color;
+
+    // Axis-aligned bounding box
+    void renderBoundingBox(const Renderer& renderer, const RenderOptions& options) const;
 };
 
 #endif

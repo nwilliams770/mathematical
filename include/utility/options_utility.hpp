@@ -23,12 +23,12 @@ inline std::vector<Options::Flag> OptionsUtility::parseCommandLineArguments(int 
     if (arg == Options::SHOW_GRID)
     {
       flags.push_back(Options::Flag::Grid);
-    } else if (arg == Options::SHOW_GRID_LABELS)
-    {
-      flags.push_back(Options::Flag::GridLabels);
     } else if (arg.find(Options::LOAD_FROM_PATH + "=") == 0)
     {
       flags.push_back(Options::Flag::LoadFromPath);
+    } else if (arg == Options::RENDER_BOUNDING_BOXES)
+    {
+      flags.push_back(Options::Flag::RenderBoundingBoxes);
     }
   }
   return flags;
