@@ -14,14 +14,29 @@ class Line : public Object {
     Line(Vec3 start = Vec3(), Vec3 end = Vec3());
     ~Line() override = default; // Default destructor
 
-    const Vec3 getStart() const;
-    const Vec3 getEnd() const;
+    const Vec3 getStart() const { return start; }
+    const Vec3 getEnd() const { return end; }
 
-    void setStart(Vec3 newStart);
-    void setEnd(Vec3 newEnd);
+    void setStart(Vec3 start) { this->start = start; }
+    void setEnd(Vec3 end) { this->end = end; }
 
-    Vec3 getMin() const override;
-    Vec3 getMax() const override;
+    Vec3 getMin() const override
+    {
+      return Vec3(
+        std::min(start.x, end.x),
+        std::min(start.y, end.y),
+        std::min(start.z, end.z)
+      );
+    }
+
+    Vec3 getMax() const override
+    {
+      return Vec3(
+        std::max(start.x, end.x),
+        std::max(start.y, end.y),
+        std::max(start.z, end.z)
+      );
+    }
 
     json toJSON() const override;
     void fromJSON(const json& j) override;

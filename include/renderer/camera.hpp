@@ -6,11 +6,6 @@
 class Camera
 {
   public:
-    Vec3 position;
-    Vec3 direction;
-    Vec3 up;
-    float focalLength;
-
     Camera(const Vec3& position = Vec3(), const Vec3& direction = Vec3(0, 0, -1), const Vec3& up = Vec3(0, 1, 0), float focalLength);
 
     // Movements
@@ -36,6 +31,17 @@ class Camera
 
     // Methods to handle input for walking through the scene
     void handleInput(const char input);  // 'w', 'a', 's', 'd' for movement, 'q', 'e' for rotation, etc.
+
+    Vec3 getPosition() const { return position; }
+    Vec3 getDirection() const { return direction; }
+    Vec3 getUp() const { return up; }
+    float getFocalLength() const { return focalLength; }
+
+  private:
+    Vec3 position;
+    Vec3 direction;
+    Vec3 up;
+    float focalLength;
 };
 
 #endif

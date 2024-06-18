@@ -6,35 +6,6 @@
 
 Polygon::Polygon(const std::vector<Vec3>& points): points(points), pointCount(points.size()) {};
 
-const std::vector<Vec3>& Polygon::getPoints() const { return points; }
-void Polygon::setPoints(const std::vector<Vec3>& newPoints) { points = newPoints; }
-
-Vec3 Polygon::getMin() const
-{
-  Vec3 min = points[0];
-  for (const auto& point : points)
-  {
-   if (point.x < min.x) min.x = point.x;
-   if (point.y < min.y) min.y = point.y;
-   if (point.z < min.z) min.z = point.z;
-  }
-
-  return min;
-}
-
-Vec3 Polygon::getMax() const
-{
-  Vec3 max = points[0];
-  for (const auto& point : points)
-  {
-   if (point.x > max.x) max.x = point.x;
-   if (point.y > max.y) max.y = point.y;
-   if (point.z > max.z) max.z = point.z;
-  }
-
-  return max;
-}
-
 json Polygon::toJSON() const
 {
   json j;

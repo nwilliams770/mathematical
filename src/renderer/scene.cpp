@@ -50,10 +50,6 @@ void Scene::editObject(Object* oldObj, Object* newObj)
   }
 }
 
-const std::vector<Object*> Scene::getObjects() const { return objects; }
-void Scene::setName(const std::string& name) { this->name = name; }
-std::string Scene::getName() const { return name; }
-
 json Scene::toJSON() const {
   json j;
   j[JsonKeys::NAME] = name;

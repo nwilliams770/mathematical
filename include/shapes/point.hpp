@@ -15,10 +15,10 @@ class Point : public Object {
     ~Point() override = default; // Default destructor
 
     Vec3 getPosition() const { return position; }
-    void setPosition(const Vec3& newPosition) { position = newPosition; }
+    void setPosition(const Vec3& position) { this->position = position; }
 
-    Vec3 getMin() const override;
-    Vec3 getMax() const override;
+    Vec3 getMin() const { return position; }
+    Vec3 getMax() const { return position; }
 
     json toJSON() const override;
     void fromJSON(const json& j) override;

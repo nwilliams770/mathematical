@@ -1,9 +1,10 @@
 #ifndef VIEW_FRUSTRUM_H
 #define VIEW_FRUSTRUM_H
 
-#include "camera.hpp"
-#include "vec3.hpp"
 #include <array>
+#include "camera.hpp"
+#include "plane.hpp"
+#include "vec3.hpp"
 
 class ViewFrustrum
 {
@@ -26,8 +27,9 @@ class ViewFrustrum
     float farClip;
 
     std::array<Plane, 6> planes;
+    enum { Near = 0, Far, Left, Right, Top, Bottom };
 
-    enum Pla
+    void updatePlane(int index, const Vec3& point, const Vec3& normal);
 };
 
 #endif

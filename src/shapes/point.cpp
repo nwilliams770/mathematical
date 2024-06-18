@@ -6,10 +6,6 @@
 
 Point::Point(float x, float y, float z, const Color& color) : Object(color), position(x, y, z) {}
 
-Vec3 Point::getMin() const { return position; }
-
-Vec3 Point::getMax() const { return position; }
-
 json Point::toJSON() const
 {
   return json{

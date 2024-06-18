@@ -12,8 +12,8 @@ class Plane
 
     bool isPointOnPositiveSide(const Vec3& point);
 
-    Vec3 getNormal() const;
-    float getDistance() const;
+    Vec3 getNormal() const { return normal; }
+    float getDistance() const { return distance; }
 
   private:
     Vec3 normal;

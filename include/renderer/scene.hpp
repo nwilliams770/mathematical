@@ -15,9 +15,9 @@ class Scene {
     void removeObject(Object* obj);
     void editObject(Object* oldObj, Object* newObj);
 
-    const std::vector<Object*> getObjects() const;
-    void setName(const std::string& name);
-    std::string getName() const;
+    const std::vector<Object*> getObjects() const { return objects; }
+    void setName(const std::string& name) { this->name = name; }
+    std::string getName() const { return name; }
 
     void clear();
     void render(const RenderOptions& options);

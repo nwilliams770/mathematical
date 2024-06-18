@@ -14,7 +14,7 @@ class Object {
     Object(const Color& color = Color()) : color(color) {};
     virtual ~Object() {};
 
-    void setColor(const Color& newColor) { color = newColor; }
+    void setColor(const Color& color) { this->color = color; }
     Color getColor() const { return color; }
 
     virtual json toJSON() const = 0;

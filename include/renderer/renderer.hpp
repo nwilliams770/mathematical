@@ -38,7 +38,6 @@ class Renderer {
     void drawDiagonalLine(int x1, int y1, int x2, int y2) const;
     void drawLineBresenham(int x1, int y1, int x2, int y2) const;
 
-
     // Debugging
     bool showGrid;
 
