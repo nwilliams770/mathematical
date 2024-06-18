@@ -8,7 +8,8 @@
 Scene::Scene(const Renderer& renderer) : renderer(renderer)
 {
   LOG("Scene constructor called");
-};
+}
+
 Scene::~Scene() {
   LOG("Scene destructor called");
   clear();
@@ -18,7 +19,6 @@ void Scene::addObject(Object* obj)
 {
   objects.push_back(obj);
   LOG_ARGS("Object added to scene, total objects now:", objects.size());
-
 }
 
 void Scene::removeObject(Object* obj)
@@ -63,7 +63,7 @@ json Scene::toJSON() const {
   }
 
   return j;
-};
+}
 
 void Scene::fromJSON(const json& j) {
   LOG("Scene fromJSON called");
@@ -91,7 +91,7 @@ void Scene::fromJSON(const json& j) {
       LOG("Object loaded and added to scene");
     }
   }
-};
+}
 
 void Scene::clear()
 {

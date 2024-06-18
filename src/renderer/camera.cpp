@@ -6,25 +6,25 @@ Camera::Camera(const Vec3& position , const Vec3& direction, const Vec3& up, flo
 {
   this->direction.normalize();
   this->up.normalize();
-};
+}
 
-void Camera::moveForward(float distance) { position += (direction * distance); };
+void Camera::moveForward(float distance) { position += (direction * distance); }
 
-void Camera::moveBackward(float distance) { position -= (direction * distance); };
+void Camera::moveBackward(float distance) { position -= (direction * distance); }
 
 // Right-hand coordinate system
 void Camera::moveLeft(float distance)
 {
   Vec3 left = up.cross(direction).normalize();
   position += left * distance;
-};
+}
 
 // Right-hand coordinate system
 void Camera::moveRight(float distance)
 {
   Vec3 right = direction.cross(up).normalize();
   position += right * distance;
-};
+}
 
 // Y-axis (Heading)
 void Camera::turnLeft(float angle)
@@ -106,4 +106,4 @@ void Camera::handleInput(const char input)
     default:
       break;
   }
-};
+}

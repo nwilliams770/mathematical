@@ -5,7 +5,7 @@
 
 SaveData::SaveData(Scene& scene) : scene(scene) {
   LOG("SaveData constructor called with at address: " + std::to_string(reinterpret_cast<uintptr_t>(&scene)));
-};
+}
 
 json SaveData::toJSON() const
 {

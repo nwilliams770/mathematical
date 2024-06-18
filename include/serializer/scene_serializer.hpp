@@ -1,8 +1,7 @@
 #ifndef SCENE_SERIALIZER_HPP
 #define SCENE_SERIALIZER_HPP
 
-#include "save_data.hpp"
-#include "json.hpp"
+class SaveData;
 
 class SceneSerializer {
   public:

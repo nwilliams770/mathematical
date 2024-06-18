@@ -5,6 +5,7 @@
 #include "json.hpp"
 #include "render_options.hpp"
 
+class RenderOptions;
 class Renderer; // Forward declaration of Renderer
 // only referencing so just needs to know about its existence
 

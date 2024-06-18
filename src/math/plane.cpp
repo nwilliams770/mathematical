@@ -1,6 +1,7 @@
 #include "plane.hpp"
 
-Plane::Plane(const Vec3& normal, float distance) : normal(normal), distance(distance) {}
+Plane::Plane(const Vec3& normal, float distance) :
+  normal(normal), distance(distance) {}
 
 void Plane::setFromPointNormal(const Vec3& point, const Vec3& normal)
 {

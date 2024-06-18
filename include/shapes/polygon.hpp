@@ -3,8 +3,8 @@
 
 #include <vector>
 #include "object.hpp"
+#include "vec3.hpp"
 
-class Vec3; // Forward declaration
 class Renderer; // Forward declaration
 class RenderOptions; // Forward declaration
 

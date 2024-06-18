@@ -30,4 +30,4 @@ void Point::render(const Renderer& renderer, const RenderOptions& options) {
   renderer.setColor(color);
   renderer.renderPoint(position);
   renderBoundingBox(renderer, options);
-};
+}

@@ -64,4 +64,4 @@ void Polygon::render(const Renderer& renderer, const RenderOptions& options) {
   renderer.setColor(color);
   renderer.renderPolygon(points);
   renderBoundingBox(renderer, options);
-};
+}

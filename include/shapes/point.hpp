@@ -4,9 +4,9 @@
 #include "color.hpp"
 #include "object.hpp" // because it inherits needs to know full definition
 #include "json.hpp"
+#include "vec3.hpp"
 
 class Renderer; // Forward declaration
-class Vec3; // Forward declaration
 class RenderOptions; // Forward declaration
 
 class Point : public Object {

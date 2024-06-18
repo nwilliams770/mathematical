@@ -3,11 +3,10 @@
 
 #include <SDL2/SDL.h>
 #include <vector>
-#include "color.hpp"
-#include "point.hpp"
 
+class Color;
 class Point; // Forward declaration of Point
-// only referencing so just needs to know about its existence
+class Vec3;
 
 class Renderer {
   public:

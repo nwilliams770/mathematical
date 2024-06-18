@@ -3,6 +3,7 @@
 #include "logging.hpp"
 #include "renderer.hpp"
 #include "renderer_constants.hpp"
+#include "vec3.hpp"
 
 float Renderer::focalLength = 100.0f;
 
@@ -11,7 +12,7 @@ Renderer::Renderer()
     window(nullptr), renderer(nullptr),
     width(RendererConstants::INITIAL_WINDOW_WIDTH),
     height(RendererConstants::INITIAL_WINDOW_WIDTH),
-    showGrid(false) {};
+    showGrid(false) {}
 
 Renderer::~Renderer()
 {
@@ -59,18 +60,18 @@ int Renderer::init() {
   }
 
   return 0; // Zero indicates success
-};
+}
 
 void Renderer::clear()
 {
   setColor(RendererConstants::CLEAR_COLOR);
   SDL_RenderClear(renderer);
-};
+}
 
 void Renderer::present()
 {
   SDL_RenderPresent(renderer);
-};
+}
 
 void Renderer::setColor(const Color& color) const {
   SDL_Color sdlColor = color.ToSDLColor();
@@ -147,7 +148,7 @@ void Renderer::renderPolygon(const std::vector<Vec3>& vertices) const
     const Vec3& end = vertices[(i + 1) % vertices.size()];
     renderLine(start, end);
   }
-};
+}
 
 void Renderer::enableGrid(bool enable) { showGrid = enable; }
 
@@ -184,7 +185,7 @@ void Renderer::drawHorizontalLine(int x1, int x2, int y) const
   {
     drawPoint(x, y);
   }
-};
+}
 
 void Renderer::drawDiagonalLine(int x1, int y1, int x2, int y2) const
 {
@@ -198,7 +199,7 @@ void Renderer::drawDiagonalLine(int x1, int y1, int x2, int y2) const
     y1 += dy;
   }
   drawPoint(x1, y1);
-};
+}
 
 void Renderer::drawLineBresenham(int x1, int y1, int x2, int y2) const {
   int dx = abs(x2 - x1);
@@ -228,7 +229,7 @@ void Renderer::drawLineBresenham(int x1, int y1, int x2, int y2) const {
       y1 += stepY;
     }
   }
-};
+}
 
 
 

@@ -4,9 +4,9 @@
 #include "object.hpp"
 #include "vec3.hpp"
 #include "render_options.hpp"
+#include "json.hpp"
 
 class Renderer; // Forward declaration
-class Vec3; // Forward declaration
 class RenderOptions; // Forward declaration
 
 class Line : public Object {

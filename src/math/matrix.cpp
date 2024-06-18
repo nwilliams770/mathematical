@@ -5,9 +5,9 @@ Matrix::Matrix()
   m = {1.0f, 0.0f, 0.0f,
        0.0f, 1.0f, 0.0f,
        0.0f, 0.0f, 1.0f};
-};
+}
 
-Matrix::Matrix(const std::array<float, 9>& values) : m(values) {};
+Matrix::Matrix(const std::array<float, 9>& values) : m(values) {}
 
 Vec3 Matrix::transform(const Vec3& vec) const {
   return Vec3(
@@ -34,7 +34,7 @@ Matrix Matrix::operator*(const Matrix& other) const {
 Matrix Matrix::identity()
 {
   return Matrix();
-};
+}
 
 Matrix Matrix::rotationX(float angle) {
   float c = std::cos(angle);
