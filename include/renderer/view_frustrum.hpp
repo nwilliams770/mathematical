@@ -9,9 +9,10 @@
 class ViewFrustrum
 {
   public:
-    ViewFrustrum(float fieldOfViewY, float aspectRatio, float nearClip, float farClip);
+    ViewFrustrum(float fieldOfViewYRadians, float aspectRatio, float nearClip, float farClip);
 
     // Update the frustum based on the camera's position and orientation
+    // Generate inward-pointing view frustrum planes
     void update(const Camera& camera);
 
     // Check if a point is inside the frustum
@@ -21,7 +22,7 @@ class ViewFrustrum
     bool isAABBInside(const Vec3& min, const Vec3& max) const;
 
   private:
-    float fieldOfViewY;
+    float fieldOfViewYRadians;
     float aspectRatio;
     float nearClip;
     float farClip;
