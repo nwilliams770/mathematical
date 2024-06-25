@@ -4,6 +4,7 @@
 #include "color.hpp"
 #include "json.hpp"
 #include "render_options.hpp"
+#include "vec3.hpp"
 
 class RenderOptions;
 class Renderer; // Forward declaration of Renderer

@@ -29,9 +29,6 @@ class Camera
     void tiltLeft(float angle);
     void tiltRight(float angle);
 
-    // Methods to handle input for walking through the scene
-    void handleInput(const char input);  // 'w', 'a', 's', 'd' for movement, 'q', 'e' for rotation, etc.
-
     Vec3 getPosition() const { return position; }
     Vec3 getDirection() const { return direction; }
     Vec3 getUp() const { return up; }
@@ -40,7 +37,6 @@ class Camera
     Vec3 position;
     Vec3 direction;
     Vec3 up;
-    float focalLength;
 };
 
 #endif

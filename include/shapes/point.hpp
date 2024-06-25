@@ -17,8 +17,8 @@ class Point : public Object {
     Vec3 getPosition() const { return position; }
     void setPosition(const Vec3& position) { this->position = position; }
 
-    Vec3 getMin() const { return position; }
-    Vec3 getMax() const { return position; }
+    Vec3 getMin() const override { return position; }
+    Vec3 getMax() const override { return position; }
 
     json toJSON() const override;
     void fromJSON(const json& j) override;

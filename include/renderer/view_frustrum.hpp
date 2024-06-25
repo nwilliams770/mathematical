@@ -17,6 +17,7 @@ class ViewFrustrum
 
     // Check if a point is inside the frustum
     bool isPointInside(const Vec3& point) const;
+    bool isPointInsidePlane(const Vec3& point, const Plane& plane) const;
 
     // Check if an axis-aligned bounding box is inside the frustum
     bool isAABBInside(const Vec3& min, const Vec3& max) const;

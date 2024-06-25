@@ -16,7 +16,7 @@ class Polygon : public Object {
     const std::vector<Vec3>& getPoints() const { return points; }
     void setPoints(const std::vector<Vec3>& points) { this->points = points; }
 
-    Vec3 getMin() const
+    Vec3 getMin() const override
     {
       Vec3 min = points[0];
       for (const auto& point : points)
@@ -29,7 +29,7 @@ class Polygon : public Object {
       return min;
     }
 
-    Vec3 getMax() const
+    Vec3 getMax() const override
     {
       Vec3 max = points[0];
       for (const auto& point : points)

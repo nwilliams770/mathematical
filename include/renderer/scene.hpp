@@ -8,7 +8,7 @@
 
 class Scene {
   public:
-    Scene(const Renderer& renderer);
+    Scene();
     ~Scene();
 
     void addObject(Object* obj);
@@ -20,14 +20,12 @@ class Scene {
     std::string getName() const { return name; }
 
     void clear();
-    void render(const RenderOptions& options);
 
     json toJSON() const;
     void fromJSON(const json& j);
 
   private:
     std::vector<Object*> objects;
-    const Renderer& renderer;
     std::string name;
 };
 

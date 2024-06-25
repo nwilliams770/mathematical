@@ -14,16 +14,21 @@ ViewFrustrum::ViewFrustrum(float fieldOfViewYRadians, float aspectRatio, float n
 {}
 
 // Update the frustum based on the camera's position and orientation
-// Generate inward-pointing view frustrum planes
+// Generate outward-pointing view frustrum planes
 void ViewFrustrum::update(const Camera& camera)
 {
   Vec3 cameraPosition = camera.getPosition();
-  Vec3 cameraDirection = camera.getDirection();
-  Vec3 cameraUp = camera.getUp();
-  Vec3 cameraRight = cameraDirection.cross(cameraUp);
+  Vec3 cameraDirection = camera.getDirection().normalized();
+  Vec3 cameraUp = camera.getUp().normalized();
+  Vec3 cameraRight = cameraDirection.cross(cameraUp).normalized();
 
   Vec3 nearClipCenter = cameraPosition + cameraDirection * nearClip;
   Vec3 farClipCenter = cameraPosition + cameraDirection * farClip;
+
+  LOG_ARGS("Camera Position: " ,cameraPosition.x ,", " ,cameraPosition.y ,", " ,cameraPosition.z);
+  LOG_ARGS("Camera Direction: " ,cameraDirection.x ,", " ,cameraDirection.y ,", " ,cameraDirection.z);
+  LOG_ARGS("Near Clip Center: " ,nearClipCenter.x ,", " ,nearClipCenter.y ,", " ,nearClipCenter.z);
+  LOG_ARGS("Far Clip Center: " ,farClipCenter.x ,", " ,farClipCenter.y ,", " ,farClipCenter.z);
 
   // tan(fov / 2) = (nearHeight / 2) / nearClip - solve for nearHeight
   float nearClipHeight = 2 * nearClip * std::tan(fieldOfViewYRadians / 2.0f);
@@ -44,6 +49,9 @@ void ViewFrustrum::update(const Camera& camera)
     (cameraUp * (nearClipHeight / 2)) +
     (cameraRight * (nearClipWidth / 2));
 
+  LOG_ARGS("Near Clip Top Left: " ,nearClipTopLeft.x ,", " ,nearClipTopLeft.y ,", " ,nearClipTopLeft.z);
+  LOG_ARGS("Near Clip Bottom Right: " ,nearClipBottomRight.x ,", " ,nearClipBottomRight.y ,", " ,nearClipBottomRight.z);
+
   Vec3 farClipTopLeft = farClipCenter +
     (cameraUp * (farClipHeight / 2)) -
     (cameraRight * (farClipWidth / 2));
@@ -61,33 +69,39 @@ void ViewFrustrum::update(const Camera& camera)
   updatePlane(Near, nearClipCenter, cameraDirection);
   updatePlane(Far, farClipCenter, -cameraDirection);
 
-  // Generate vector pointing from nearClipBottomLeft to nearClipTopLeft (upward)
+
+  // Generate vector pointing from nearClipTopLeft to nearClipBottomLeft (downward)
   // and cross by vector pointing from nearClipTopLeft to farClipTopLeft (forward from the POV of the camera)
   // Crossing them, using right-hand rule results in a vector normal of the left plane
-  // pointing inwards of the view frustrum
-  Vec3 leftPlaneNormal = (nearClipTopLeft - nearClipBottomLeft).cross(farClipTopLeft - nearClipTopLeft).normalized();
+  // pointing outwards of the view frustrum
+  Vec3 leftPlaneNormal = (farClipTopLeft - nearClipTopLeft).cross(nearClipBottomLeft - nearClipTopLeft).normalized();
   updatePlane(Left, nearClipTopLeft, leftPlaneNormal);
 
-  // Generate vector pointing from nearClipTopRight to farClipTopRight (forward from the POV of the camera)
-  // and cross by vector pointing from nearClipTopRight to nearClipBottomRight (downward)
+  // Generate vector pointing from nearClipTopRight to nearClipBottomRight (downward)
+  // and cross by vector pointing from farClipTopRight to nearClipTopRight (backward from the POV of the camera)
   // Crossing them, using right-hand rule results in a vector normal of the right plane
-  // pointing inwards of the view frustrum
-  Vec3 rightPlaneNormal = (farClipTopRight - nearClipTopRight).cross(nearClipBottomRight - nearClipTopRight).normalized();
+  // pointing outwards of the view frustrum
+  Vec3 rightPlaneNormal = (nearClipBottomRight - nearClipTopRight).cross(farClipTopRight - nearClipTopRight).normalized();
   updatePlane(Right, nearClipTopRight, rightPlaneNormal);
 
-  // Generate vector pointing from nearClipTopLeft to nearClipTopRight (rightward)
+  // Generate vector pointing from nearClipTopRight to nearClipTopLeft (leftward)
   // and cross by vector pointing from nearClipTopLeft to farClipTopLeft (forward from the POV of the camera)
   // Crossing them, using right-hand rule results in a vector normal of the top plane
-  // pointing inwards of the view frustrum
+  // pointing outwards of the view frustrum
   Vec3 topPlaneNormal = (nearClipTopRight - nearClipTopLeft).cross(farClipTopLeft - nearClipTopLeft).normalized();
-  updatePlane(Top, nearClipTopRight, topPlaneNormal);
+  updatePlane(Top, nearClipTopLeft, topPlaneNormal);
 
-  // Generate vector pointing from nearClipBottomLeft to farClipBottomLeft (forward from the POV of the camera)
-  // and cross by vector pointing from nearClipBottomRight to nearClipBottomLeft (leftward)
+  // Generate vector pointing from nearClipBottomLeft to nearClipBottomRight (rightward)
+  // and cross by vector pointing from nearClipBottomLeft to farClipBottomLeft (forward from the POV of the camera)
   // Crossing them, using right-hand rule results in a vector normal of the bottom plane
-  // pointing inwards of the view frustrum
-  Vec3 bottomPlaneNormal = (farClipBottomLeft - nearClipBottomLeft).cross(nearClipBottomRight - nearClipBottomLeft).normalized();
-  updatePlane(Bottom, farClipBottomRight, bottomPlaneNormal);
+  // pointing outwards of the view frustrum
+  Vec3 bottomPlaneNormal = (nearClipBottomRight - nearClipBottomLeft).cross(farClipBottomLeft - nearClipBottomLeft).normalized();
+  updatePlane(Bottom, nearClipBottomLeft, bottomPlaneNormal);
+
+  LOG_ARGS("Left Plane Normal: ", leftPlaneNormal.x, ", ", leftPlaneNormal.y, ", ", leftPlaneNormal.z);
+  LOG_ARGS("Right Plane Normal: ", rightPlaneNormal.x, ", ", rightPlaneNormal.y, ", ", rightPlaneNormal.z);
+  LOG_ARGS("Top Plane Normal: ", topPlaneNormal.x, ", ", topPlaneNormal.y, ", ", topPlaneNormal.z);
+  LOG_ARGS("Bottom Plane Normal: ", bottomPlaneNormal.x, ", ", bottomPlaneNormal.y, ", ", bottomPlaneNormal.z);
 }
 
 // Check if a point is inside the frustum
@@ -95,12 +109,22 @@ bool ViewFrustrum::isPointInside(const Vec3& point) const
 {
   for (const auto& plane : planes)
   {
-    // > 0 - point is on the 'positive side' - in the direction of the normal
-    // = 0 - point is on the plane
-    // < 0 - point is on the 'negative side' - opposite direction of the normal
-    if (point.dot(plane.getNormal()) - plane.getDistance() < 0) return false;
+    if (!isPointInsidePlane(point, plane)) return false;
   }
   return true;
+}
+
+bool ViewFrustrum::isPointInsidePlane(const Vec3& point, const Plane& plane) const
+{
+  float distance = point.dot(plane.getNormal()) - plane.getDistance();
+  // LOG_ARGS("Plane Normal (x, y, z): ", plane.getNormal().x, plane.getNormal().y, plane.getNormal().z);
+  // LOG_ARGS("Plane Distance: ", plane.getDistance());
+  // LOG_ARGS("Point (x, y, z): ", point.x, point.y, point.z);
+  // LOG_ARGS("Distance from point to plane: ", distance);
+  // > 0 - point is on the 'positive side' - in the direction of the normal
+  // = 0 - point is on the plane
+  // < 0 - point is on the 'negative side' - opposite direction of the normal
+  return distance >= 0;
 }
 
 // Check if an axis-aligned bounding box is inside the frustum
@@ -122,7 +146,7 @@ bool ViewFrustrum::isAABBInside(const Vec3& min, const Vec3& max) const
     bool allOutside = true;
     for (const auto& vertex : vertices)
     {
-      if (vertex.dot(plane.getNormal()) - plane.getDistance() >= 0)
+      if (isPointInsidePlane(vertex, plane))
       {
         allOutside = false; // At least one vertex is inside or on the plane
         break;
@@ -134,4 +158,9 @@ bool ViewFrustrum::isAABBInside(const Vec3& min, const Vec3& max) const
     }
   }
   return true; // If all planes have at least one vertex inside or on the plane, the AABB is inside the frustum
+}
+
+void ViewFrustrum::updatePlane(int index, const Vec3& point, const Vec3& normal)
+{
+  planes[index].setFromPointNormal(point, normal);
 }

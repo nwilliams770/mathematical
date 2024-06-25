@@ -5,10 +5,7 @@
 #include "polygon.hpp"
 #include "logging.hpp"
 
-Scene::Scene(const Renderer& renderer) : renderer(renderer)
-{
-  LOG("Scene constructor called");
-}
+Scene::Scene() {}
 
 Scene::~Scene() {
   LOG("Scene destructor called");
@@ -97,12 +94,4 @@ void Scene::clear()
   }
   objects.clear();
   LOG("Scene cleared");
-}
-
-void Scene::render(const RenderOptions& options)
-{
-  for (Object* obj : objects)
-  {
-    obj->render(renderer, options);
-  }
 }

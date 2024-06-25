@@ -21,7 +21,3 @@ bool Plane::isPointOnPositiveSide(const Vec3& point)
   // point is on negative side or on the plane
   return false;
 }
-
-Vec3 Plane::getNormal() const { return normal; }
-
-float Plane::getDistance() const { return distance; }

@@ -4,6 +4,8 @@
 #include "renderer.hpp"
 #include "renderer_constants.hpp"
 #include "vec3.hpp"
+#include "scene.hpp"
+#include "view_frustrum.hpp"
 
 float Renderer::focalLength = 100.0f;
 
@@ -78,20 +80,10 @@ void Renderer::setColor(const Color& color) const {
   SDL_SetRenderDrawColor(renderer, sdlColor.r, sdlColor.g, sdlColor.b, sdlColor.a);
 }
 
-void Renderer::handleEvents(bool& running)
-{
-  SDL_Event event;
-  while (SDL_PollEvent(&event))
-  {
-    if (event.type == SDL_QUIT)
-    {
-      running = false;
-      return;
-    }
-  }
-}
-
 std::pair<int, int> Renderer::projectTo2D(const Vec3& point) {
+  if (point.z <= 0) {
+      LOG("Warning: Point.z is zero or negative, which may lead to incorrect projection.");
+    }
   // 'simple' or 'weak' perspective projection
   float perspectiveX = point.x / (point.z / focalLength + 1);
   float perspectiveY = point.y / (point.z / focalLength + 1);
@@ -100,6 +92,23 @@ std::pair<int, int> Renderer::projectTo2D(const Vec3& point) {
   int scaledY = static_cast<int>(perspectiveY * RendererConstants::SCALE_FLOAT);
 
   return {scaledX, scaledY};
+}
+
+void Renderer::renderScene(const Scene& scene, const ViewFrustrum& frustrum, const RenderOptions& options)
+{
+  for (const auto& object : scene.getObjects())
+  {
+    Vec3 min = object->getMin();
+    Vec3 max = object->getMax();
+
+    if (frustrum.isAABBInside(min, max))
+    {
+      LOG_ARGS("Object in scene, rendering min:", min.x, min.y, min.z, "max:",  max.x, max.y, max.z);
+      object->render(*this, options);
+    }
+    LOG_ARGS("Object NOT in scene, rendering min:",  min.x, min.y, min.z, "max:",  max.x, max.y, max.z);
+
+  }
 }
 
 void Renderer::renderPoint(const Vec3& point) const

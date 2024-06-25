@@ -7,6 +7,10 @@
 class Color;
 class Point; // Forward declaration of Point
 class Vec3;
+class Scene;
+class Camera;
+class ViewFrustrum;
+class RenderOptions;
 
 class Renderer {
   public:
@@ -17,6 +21,7 @@ class Renderer {
     void clear();
     void present();
 
+    void renderScene(const Scene& scene, const ViewFrustrum& frustrum, const RenderOptions& options);
     void renderPoint(const Vec3& point) const;
     void renderLine(const Vec3& start, const Vec3& end) const;
     void renderPolygon(const std::vector<Vec3>& vertices) const;
@@ -26,8 +31,6 @@ class Renderer {
     // Debugging
     void enableGrid(bool enable);
     void drawGrid();
-
-    void handleEvents(bool& running);
 
     static float focalLength;
 

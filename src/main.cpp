@@ -7,29 +7,36 @@
 #include "scene_serializer.hpp"
 #include "renderer_constants.hpp"
 #include "render_options.hpp"
+#include "camera.hpp"
+#include "view_frustrum.hpp"
+#include "event_manager.hpp"
 
 int main(int argc, char* argv[])
 {
   Renderer renderer;
-  Scene scene(renderer);
+  Scene scene;
   std::string loadPath;
   RenderOptions options;
+  Camera camera;
+  ViewFrustrum frustum(RendererConstants::FIELD_OF_VIEW_Y,
+                        static_cast<float>(RendererConstants::INITIAL_WINDOW_WIDTH) / RendererConstants::INITIAL_WINDOW_HEIGHT,
+                        RendererConstants::NEAR_CLIP,
+                        RendererConstants::FAR_CLIP);
+
+  EventManager eventManager(camera);
 
   std::vector<Options::Flag> flags = OptionsUtility::parseCommandLineArguments(argc, argv);
   for (const auto& flag : flags)
   {
     switch(flag)
     {
-      // TODO: Make this better
+      // TODO: Make this grid better if not get rid of
       case(Options::Flag::Grid):
-        LOG("enabling grid");
         renderer.enableGrid(true);
         break;
       case(Options::Flag::LoadFromPath):
         loadPath = OptionsUtility::getOptionValue(argc, argv, Options::LOAD_FROM_PATH);
-        LOG("Load path extracted: " + loadPath);
       case(Options::Flag::RenderBoundingBoxes):
-        LOG("render bounding boxes");
         options.renderBoundingBoxes = true;
         break;
     }
@@ -63,9 +70,12 @@ int main(int argc, char* argv[])
   bool running = true;
   while (running)
   {
-    renderer.handleEvents(running);
+    eventManager.handleEvents(running);
     renderer.clear();
-    scene.render(options);
+
+    frustum.update(camera);
+
+    renderer.renderScene(scene, frustum, options);
     renderer.present();
   }
   LOG("Exiting main function");
