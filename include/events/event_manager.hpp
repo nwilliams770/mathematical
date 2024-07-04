@@ -3,18 +3,21 @@
 
 #include <SDL2/SDL.h>
 #include "camera.hpp"
+#include "renderer.hpp"
 
 class EventManager
 {
   public:
-    EventManager(Camera& camera);
+    EventManager(Camera& mainCamera, Camera& debugCamera, Renderer& renderer);
 
     void handleEvents(bool& running);
 
   private:
-    Camera& camera;
+    Camera& mainCamera;
+    Camera& debugCamera;
+    Renderer& renderer;
 
-    void handleKeyPress(SDL_Keycode key);
+    void handleKeyPress(SDL_Keycode key, Camera& activeCamera);
 };
 
 #endif

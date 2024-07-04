@@ -38,5 +38,4 @@ void Object::renderBoundingBox(const Renderer& renderer, const RenderOptions& op
     renderer.renderLine(corners[1], corners[5]);
     renderer.renderLine(corners[2], corners[6]);
     renderer.renderLine(corners[3], corners[7]);
-
 }

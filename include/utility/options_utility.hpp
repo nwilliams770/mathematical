@@ -29,6 +29,9 @@ inline std::vector<Options::Flag> OptionsUtility::parseCommandLineArguments(int 
     } else if (arg == Options::RENDER_BOUNDING_BOXES)
     {
       flags.push_back(Options::Flag::RenderBoundingBoxes);
+    } else if (arg == Options::RENDER_FRUSTRUM)
+    {
+      flags.push_back(Options::Flag::RenderFrustrum);
     }
   }
   return flags;

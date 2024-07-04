@@ -3,7 +3,8 @@
 #include "logging.hpp"
 
 
-EventManager::EventManager(Camera& camera) : camera(camera) {}
+EventManager::EventManager(Camera& mainCamera, Camera& debugCamera, Renderer& renderer)
+  : mainCamera(mainCamera), debugCamera(debugCamera), renderer(renderer) {}
 
 void EventManager::handleEvents(bool& running)
 {
@@ -16,49 +17,53 @@ void EventManager::handleEvents(bool& running)
       return;
     } else if (event.type == SDL_KEYDOWN)
     {
-      handleKeyPress(event.key.keysym.sym);
+      Camera& activeCamera = renderer.isDebugViewEnabled() ? debugCamera : mainCamera;
+      handleKeyPress(event.key.keysym.sym, activeCamera);
     }
   }
 }
 
 // 'w', 'a', 's', 'd' for movement, 'q', 'e' for rotation, etc.
-void EventManager::handleKeyPress(SDL_Keycode key) {
+void EventManager::handleKeyPress(SDL_Keycode key, Camera& activeCamera) {
   float moveDistance = 1.0f; // Define movement step size
   float rotateAngle = 0.1f;  // Define rotation step size in radians
 
   LOG("Handling key press");
   switch (key) {
+    case SDLK_t:
+      renderer.toggleDebugView();
+      break;
     case SDLK_w:
-        camera.moveForward(moveDistance);
-        break;
+      activeCamera.moveForward(moveDistance);
+      break;
     case SDLK_s:
-        camera.moveBackward(moveDistance);
-        break;
+      activeCamera.moveBackward(moveDistance);
+      break;
     case SDLK_a:
-        camera.moveLeft(moveDistance);
-        break;
+      activeCamera.moveLeft(moveDistance);
+      break;
     case SDLK_d:
-        camera.moveRight(moveDistance);
-        break;
+      activeCamera.moveRight(moveDistance);
+      break;
     case SDLK_q:
-        camera.turnLeft(rotateAngle);
-        break;
+      activeCamera.turnLeft(rotateAngle);
+      break;
     case SDLK_e:
-        camera.turnRight(rotateAngle);
-        break;
+      activeCamera.turnRight(rotateAngle);
+      break;
     case SDLK_r:
-        camera.lookUp(rotateAngle);
-        break;
+      activeCamera.lookUp(rotateAngle);
+      break;
     case SDLK_f:
-        camera.lookDown(rotateAngle);
-        break;
+      activeCamera.lookDown(rotateAngle);
+      break;
     case SDLK_z:
-        camera.tiltLeft(rotateAngle);
-        break;
+      activeCamera.tiltLeft(rotateAngle);
+      break;
     case SDLK_x:
-        camera.tiltRight(rotateAngle);
-        break;
+      activeCamera.tiltRight(rotateAngle);
+      break;
     default:
-        break;
+      break;
   }
 }

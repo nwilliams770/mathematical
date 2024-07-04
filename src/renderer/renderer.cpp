@@ -5,12 +5,14 @@
 #include "renderer_constants.hpp"
 #include "vec3.hpp"
 #include "scene.hpp"
-#include "view_frustrum.hpp"
+#include "view_frustum.hpp"
+#include "camera.hpp"
 
 float Renderer::focalLength = 100.0f;
 
-Renderer::Renderer()
+Renderer::Renderer(const ViewFrustum& frustum)
   :
+    frustum(frustum),
     window(nullptr), renderer(nullptr),
     width(RendererConstants::INITIAL_WINDOW_WIDTH),
     height(RendererConstants::INITIAL_WINDOW_WIDTH),
@@ -80,35 +82,45 @@ void Renderer::setColor(const Color& color) const {
   SDL_SetRenderDrawColor(renderer, sdlColor.r, sdlColor.g, sdlColor.b, sdlColor.a);
 }
 
-std::pair<int, int> Renderer::projectTo2D(const Vec3& point) {
-  if (point.z <= 0) {
-      LOG("Warning: Point.z is zero or negative, which may lead to incorrect projection.");
-    }
-  // 'simple' or 'weak' perspective projection
-  float perspectiveX = point.x / (point.z / focalLength + 1);
-  float perspectiveY = point.y / (point.z / focalLength + 1);
+std::pair<int, int> Renderer::projectTo2D(const Vec3& point) const {
+  int width = RendererConstants::INITIAL_WINDOW_WIDTH;
+  int height = RendererConstants::INITIAL_WINDOW_HEIGHT;
 
-  int scaledX = static_cast<int>(perspectiveX * RendererConstants::SCALE_FLOAT);
-  int scaledY = static_cast<int>(perspectiveY * RendererConstants::SCALE_FLOAT);
+  Vec4 transformedPoint = frustum.getViewProjectionMatrix() * Vec4(point, 1.0f);
+  LOG_ARGS("Transformed Point in Clip Space:", transformedPoint.x, transformedPoint.y, transformedPoint.z, transformedPoint.w);
 
-  return {scaledX, scaledY};
+  if (transformedPoint.w <= 0.0f) {
+      LOG("Warning: Point is behind the camera or at the camera position, which may lead to incorrect projection.");
+      return {width / 2, height / 2}; // Return center of screen or handle as needed
+  }
+
+  // Normalized device coordinates
+  float xNDC = transformedPoint.x / transformedPoint.w;
+  float yNDC = transformedPoint.y / transformedPoint.w;
+  LOG_ARGS("NDC Coordinates:", xNDC, yNDC);
+
+  // Convert NDC to screen coordinates where origin is the center of the screen
+  int xScreen = static_cast<int>((xNDC * 0.5f + 0.5f) * width);
+  int yScreen = static_cast<int>((-yNDC * 0.5f + 0.5f) * height);
+  LOG_ARGS("Screen Coordinates:", xScreen, yScreen);
+
+  return {xScreen, yScreen};
 }
 
-void Renderer::renderScene(const Scene& scene, const ViewFrustrum& frustrum, const RenderOptions& options)
+void Renderer::renderScene(const Scene& scene, const ViewFrustum& frustum, const Camera& camera, const RenderOptions& options)
 {
   for (const auto& object : scene.getObjects())
   {
     Vec3 min = object->getMin();
     Vec3 max = object->getMax();
 
-    if (frustrum.isAABBInside(min, max))
+    if (frustum.isAABBInside(min, max))
     {
-      LOG_ARGS("Object in scene, rendering min:", min.x, min.y, min.z, "max:",  max.x, max.y, max.z);
       object->render(*this, options);
     }
-    LOG_ARGS("Object NOT in scene, rendering min:",  min.x, min.y, min.z, "max:",  max.x, max.y, max.z);
-
   }
+
+  // frustum.render(*this, options);
 }
 
 void Renderer::renderPoint(const Vec3& point) const
@@ -240,6 +252,93 @@ void Renderer::drawLineBresenham(int x1, int y1, int x2, int y2) const {
   }
 }
 
+void Renderer::renderFrustum(const std::vector<Vec3>& corners) const {
+    // Draw near clip plane
+    renderLine(corners[0], corners[1]);
+    renderLine(corners[1], corners[3]);
+    renderLine(corners[3], corners[2]);
+    renderLine(corners[2], corners[0]);
 
+    // Draw far clip plane
+    setColor(RendererConstants::DEBUG_COLOR);
+    renderLine(corners[4], corners[5]);
+    renderLine(corners[5], corners[7]);
+    renderLine(corners[7], corners[6]);
+    renderLine(corners[6], corners[4]);
 
+    // Draw connecting lines between near and far planes
+    setColor(RendererConstants::FRUSTRUM_COLOR);
+    renderLine(corners[0], corners[4]);
+    renderLine(corners[1], corners[5]);
+    renderLine(corners[2], corners[6]);
+    renderLine(corners[3], corners[7]);
+}
 
+void Renderer::renderNormal(const Vec3& start, const Vec3& normal) const {
+    Vec3 end = start + normal * 20.0f; // Scale for visibility
+    renderLine(start, end);
+}
+
+void Renderer::renderStepByStep(const Scene& scene, ViewFrustum& frustum, Camera& camera, const RenderOptions& options) {
+    LOG("Rendering initial frame:");
+    frustum.update(camera);
+    clear();
+    renderScene(scene, frustum, camera, options);
+    present();
+
+    // Test moving forward
+    for (int step = 1; step <= 3; ++step) {
+        camera.moveForward(1.0f);
+        LOG_ARGS("Camera position after moving forward (step ", step, "):", camera.getPosition().x, camera.getPosition().y, camera.getPosition().z);
+        frustum.update(camera);
+        clear();
+        LOG_ARGS("Rendering frame after forward step ", step, ":");
+        renderScene(scene, frustum, camera, options);
+        present();
+    }
+
+    // Reset camera position
+    camera.position = Vec3(0.0f, 0.0f, 0.0f);
+
+    // Test moving forward
+    for (int step = 1; step <= 3; ++step) {
+        camera.moveBackward(1.0f);
+        LOG_ARGS("Camera position after moving backward (step ", step, "):", camera.getPosition().x, camera.getPosition().y, camera.getPosition().z);
+        frustum.update(camera);
+        clear();
+        LOG_ARGS("Rendering frame after backward step ", step, ":");
+        renderScene(scene, frustum, camera, options);
+        present();
+    }
+
+    // Reset camera position
+    camera.position = Vec3(0.0f, 0.0f, 0.0f);
+
+    // Test moving left
+    for (int step = 1; step <= 3; ++step) {
+        camera.moveLeft(1.0f);
+        LOG_ARGS("Camera position after moving left (step ", step, "):", camera.getPosition().x, camera.getPosition().y, camera.getPosition().z);
+        frustum.update(camera);
+        clear();
+        LOG_ARGS("Rendering frame after left step ", step, ":");
+        renderScene(scene, frustum, camera, options);
+        present();
+    }
+
+    // Reset camera position
+    camera.position = Vec3(0.0f, 0.0f, 0.0f);
+
+    // Test rotating right
+    for (int step = 1; step <= 3; ++step) {
+        camera.turnRight(0.1f);
+        LOG_ARGS("Camera direction after turning right (step ", step, "):", camera.getDirection().x, camera.getDirection().y, camera.getDirection().z);
+        frustum.update(camera);
+        clear();
+        LOG_ARGS("Rendering frame after turning right step ", step, ":");
+        renderScene(scene, frustum, camera, options);
+        present();
+    }
+
+    // Reset camera direction
+    camera.direction = Vec3(0.0f, 0.0f, -1.0f);
+}

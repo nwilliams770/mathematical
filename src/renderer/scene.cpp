@@ -15,7 +15,6 @@ Scene::~Scene() {
 void Scene::addObject(Object* obj)
 {
   objects.push_back(obj);
-  LOG_ARGS("Object added to scene, total objects now:", objects.size());
 }
 
 void Scene::removeObject(Object* obj)

@@ -1,25 +1,25 @@
-#ifndef MATRIX_HPP
-#define MATRIX_HPP
+#ifndef MATRIX33_HPP
+#define MATRIX33_HPP
 
 #include <array>
 #include "vec3.hpp"
 
-class Matrix
+class Matrix3
 {
   public:
-    Matrix(); // Default to identity
-    Matrix(const std::array<float, 9>& values);
+    Matrix3(); // Default to identity
+    Matrix3(const std::array<float, 9>& values);
 
-    static Matrix identity();
-    static Matrix rotationX(float angle);
-    static Matrix rotationY(float angle);
-    static Matrix rotationZ(float angle);
-    static Matrix scale(float scaleFactor);
-    static Matrix scale(float scaleX, float scaleY, float scaleZ);
+    static Matrix3 identity();
+    static Matrix3 rotationX(float angle);
+    static Matrix3 rotationY(float angle);
+    static Matrix3 rotationZ(float angle);
+    static Matrix3 scale(float scaleFactor);
+    static Matrix3 scale(float scaleX, float scaleY, float scaleZ);
 
     Vec3 transform(const Vec3& vec) const;
 
-    Matrix operator*(const Matrix& other) const;
+    Matrix3 operator*(const Matrix3& other) const;
 
     float& operator()(int row, int col);
     const float& operator()(int row, int col) const;
@@ -34,17 +34,17 @@ class Matrix
     std::array<float, 9> m;
 };
 
-inline float& Matrix::operator()(int row, int col)
+inline float& Matrix3::operator()(int row, int col)
 {
   return m[row * 3 + col];
 };
 
-inline const float& Matrix::operator()(int row, int col) const
+inline const float& Matrix3::operator()(int row, int col) const
 {
   return m[row * 3 + col];
 };
 
-inline void Matrix::setRow(int row, const std::array<float, 3>& values)
+inline void Matrix3::setRow(int row, const std::array<float, 3>& values)
 {
   for (int col = 0; col < 3; col++)
   {
@@ -52,7 +52,7 @@ inline void Matrix::setRow(int row, const std::array<float, 3>& values)
   }
 };
 
-inline void Matrix::setColumn(int col, const std::array<float, 3>& values)
+inline void Matrix3::setColumn(int col, const std::array<float, 3>& values)
 {
   for (int row = 0; row < 3; row++)
   {
@@ -60,7 +60,7 @@ inline void Matrix::setColumn(int col, const std::array<float, 3>& values)
   }
 };
 
-inline std::array<float, 3> Matrix::getRow(int row) const
+inline std::array<float, 3> Matrix3::getRow(int row) const
 {
   std::array<float, 3> rowData;
   for (int col = 0; col < 3; col++)
@@ -70,7 +70,7 @@ inline std::array<float, 3> Matrix::getRow(int row) const
   return rowData;
 };
 
-inline std::array<float, 3> Matrix::getColumn(int col) const
+inline std::array<float, 3> Matrix3::getColumn(int col) const
 {
   std::array<float, 3> colData;
   for (int row = 0; row < 3; row++)

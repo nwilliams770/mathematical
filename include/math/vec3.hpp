@@ -71,28 +71,38 @@ class Vec3
       return *this;
     }
 
+    inline float magnitude() const {
+      return std::sqrt(x * x + y * y + z * z);
+    }
+
+    bool operator==(const Vec3& other) const
+    {
+      return x == other.x && y == other.y && z == other.z;
+    }
+
+
     Vec3& normalize()
     {
-      float magnitude = std::sqrt(x * x + y * y + z * z);
+      float magnitude = this->magnitude();
       if (magnitude > 0)
       {
         x /= magnitude;
         y /= magnitude;
         z /= magnitude;
       } else {
-        LOG("Attempted to normalize a zero-length vector");
+        // LOG("Attempted to normalize a zero-length vector");
       }
       return *this;
     }
 
     Vec3 normalized() const
     {
-      float magnitude = std::sqrt(x * x + y * y + z * z);
+      float magnitude = this->magnitude();
       if (magnitude > 0)
       {
         return Vec3(x / magnitude, y / magnitude, z / magnitude);
       } else {
-        LOG("Attempted to normalize a zero-length vector");
+        // LOG("Attempted to normalize a zero-length vector");
         return Vec3();
       }
     }
