@@ -2,7 +2,17 @@
 #include "renderer.hpp"
 #include "vec3.hpp"
 
-Line::Line(Vec3 start, Vec3 end) : start(start), end(end) {}
+Line::Line(Vec3 start, Vec3 end, const Color& color, float strokeWeight)
+  : Object(color), start(start), end(end), strokeWeight(strokeWeight) {}
+
+float Line::calculateDistance(const Camera& camera) const
+{
+  float distanceStart = (start - camera.getPosition()).magnitude();
+  float distanceEnd = (end - camera.getPosition()).magnitude();
+
+  return (distanceStart + distanceEnd) / 2.0f;
+}
+
 
 json Line::toJSON() const
 {
@@ -27,8 +37,16 @@ void Line::fromJSON(const json& j)
 }
 
 
-void Line::render(const Renderer& renderer, const RenderOptions& options) {
-  renderer.setColor(color);
-  renderer.renderLine(start, end);
+void Line::render(const Renderer& renderer, const Camera& camera, const RenderOptions& options) {
+  float distance = calculateDistance(camera);
+  int distanceOpacity = Renderer::calculateOpacity(distance, camera.getFrustum());
+  int renderOpacity = (color.getOpacity() * distanceOpacity) / 255; // TODO const
+
+  Color renderColor = color;
+  renderColor.setOpacity(renderOpacity);
+
+  renderer.setColor(renderColor);
+  renderer.renderLine(start, end, strokeWeight);
+
   renderBoundingBox(renderer, options);
 };

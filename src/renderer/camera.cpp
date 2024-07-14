@@ -3,10 +3,12 @@
 #include "camera.hpp"
 #include "matrix3.hpp"
 #include "matrix4.hpp"
+#include "view_frustum.hpp"
 
 
-Camera::Camera(const Vec3& position , const Vec3& direction, const Vec3& up) :
-  position(position), direction(direction), up(up)
+
+Camera::Camera(const ViewFrustum& frustum, const Vec3& position , const Vec3& direction, const Vec3& up) :
+  position(position), direction(direction), up(up), frustum(frustum)
 {
   this->direction = this->direction.normalize();
   this->up = this->up.normalize();
@@ -18,13 +20,13 @@ Camera::Camera(const Vec3& position , const Vec3& direction, const Vec3& up) :
 Matrix4 Camera::getViewMatrix() const
 {
   Vec3 cameraForward = direction.normalized();
-  LOG_ARGS("Camera forward at view matrix getting:", cameraForward.x, cameraForward.y, cameraForward.z);
+  LOG_ARGS("Generating view matrix, camera forward normalized", cameraForward.x, cameraForward.y, cameraForward.z);
 
   Vec3 cameraRight = up.cross(cameraForward).normalize();
-  LOG_ARGS("Camera right at view matrix getting:", cameraRight.x, cameraRight.y, cameraRight.z);
+  LOG_ARGS("Generating view matrix, camera right normalized", cameraRight.x, cameraRight.y, cameraRight.z);
 
   Vec3 cameraUp = cameraForward.cross(cameraRight).normalize();
-  LOG_ARGS("Camera up at view matrix getting:", cameraUp.x, cameraUp.y, cameraUp.z);
+  LOG_ARGS("Generating view matrix, camera up normalized", cameraUp.x, cameraUp.y, cameraUp.z);
 
 
   Matrix4 rotation = Matrix4({
@@ -45,7 +47,8 @@ Matrix4 Camera::getViewMatrix() const
   LOG_ARGS("translation for camera view matrix Row 2:", translation(2, 0), translation(2, 1), translation(2, 2), translation(2, 3));
   LOG_ARGS("translation for camera view matrix Row 3:", translation(3, 0), translation(3, 1), translation(3, 2), translation(3, 3));
 
-  Matrix4 viewMatrix = rotation * translation;
+  // Rotate THEN translate, rotation done before translation here for row col vector multiplication
+  Matrix4 viewMatrix = translation * rotation;
   LOG_ARGS("viewMatrix Row 0:", viewMatrix(0, 0), viewMatrix(0, 1), viewMatrix(0, 2), viewMatrix(0, 3));
   LOG_ARGS("viewMatrix Row 1:", viewMatrix(1, 0), viewMatrix(1, 1), viewMatrix(1, 2), viewMatrix(1, 3));
   LOG_ARGS("viewMatrix Row 2:", viewMatrix(2, 0), viewMatrix(2, 1), viewMatrix(2, 2), viewMatrix(2, 3));

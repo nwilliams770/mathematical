@@ -2,11 +2,10 @@
 #define VIEW_FRUSTRUM_H
 
 #include <array>
-#include "camera.hpp"
-
 #include "vec3.hpp"
 #include "matrix4.hpp"
 
+class Camera;
 class Renderer;
 class RenderOptions;
 
@@ -19,9 +18,11 @@ class ViewFrustum
     // Check if an axis-aligned bounding box is inside the frustum
     bool isAABBInside(const Vec3& min, const Vec3& max) const;
 
-    Matrix4 getProjectionMatrix() const;
+    Matrix4 getPerspectiveMatrix() const;
     void updateViewProjectionMatrix(const Camera& camera);
-    Matrix4 getViewProjectionMatrix() const;
+    Matrix4 getViewProjectionMatrix() const { return viewProjectionMatrix; }
+    float getNearClip() const { return nearClip; }
+    float getFarClip() const { return farClip; }
 
     void render(const Renderer& renderer, const RenderOptions& options) const;
 

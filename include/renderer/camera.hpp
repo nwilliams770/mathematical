@@ -4,10 +4,12 @@
 #include "vec3.hpp"
 #include "matrix4.hpp"
 
+class ViewFrustum;
+
 class Camera
 {
   public:
-    Camera(const Vec3& position = Vec3(), const Vec3& direction = Vec3(0, 0, 1), const Vec3& up = Vec3(0, 1, 0));
+    Camera(const ViewFrustum& frustum, const Vec3& position = Vec3(), const Vec3& direction = Vec3(0, 0, 1), const Vec3& up = Vec3(0, 1, 0));
 
     void move(const Vec3& offset);
     void rotate(const Vec3& axis, float angleInRadians);
@@ -27,12 +29,16 @@ class Camera
     Vec3 getPosition() const { return position; }
     Vec3 getDirection() const { return direction; }
     Vec3 getUp() const { return up; }
+    const ViewFrustum& getFrustum() const { return frustum; }
 
-    // TODO: make private again
+
+
+
+  private:
     Vec3 position;
     Vec3 direction;
     Vec3 up;
-  private:
+    const ViewFrustum& frustum;
 };
 
 #endif

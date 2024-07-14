@@ -5,6 +5,7 @@
 #include "json.hpp"
 #include "render_options.hpp"
 #include "vec3.hpp"
+#include "camera.hpp"
 
 class RenderOptions;
 class Renderer; // Forward declaration of Renderer
@@ -21,10 +22,12 @@ class Object {
     virtual json toJSON() const = 0;
     virtual void fromJSON(const json& j) = 0;
 
-    virtual void render(const Renderer& renderer, const RenderOptions& options) = 0;
+    virtual void render(const Renderer& renderer, const Camera& camera,const RenderOptions& options) = 0;
 
     virtual Vec3 getMin() const = 0;
     virtual Vec3 getMax() const = 0;
+
+    virtual float calculateDistance(const Camera& camera) const = 0;
 
   protected:
     Color color;

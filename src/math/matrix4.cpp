@@ -10,15 +10,6 @@ Matrix4::Matrix4()
 
 Matrix4::Matrix4(const std::array<float, 16>& values) : m(values) {}
 
-Vec4 Matrix4::transform(const Vec4& vec) const {
-  return Vec4(
-    m[0] * vec.x + m[1] * vec.y + m[2] * vec.z + m[3] * vec.w,
-    m[4] * vec.x + m[5] * vec.y + m[6] * vec.z + m[7] * vec.w,
-    m[8] * vec.x + m[9] * vec.y + m[10] * vec.z + m[11] * vec.w,
-    m[12] * vec.x + m[13] * vec.y + m[14] * vec.z + m[15] * vec.w
-  );
-}
-
 Matrix4 Matrix4::operator*(const Matrix4& other) const {
   Matrix4 result;
   for (int row = 0; row < 4; ++row) {
@@ -44,10 +35,10 @@ Vec4 Matrix4::operator*(const Vec4& vec) const {
 // Static methods
 Matrix4 Matrix4::translate(float x, float y, float z) {
   return Matrix4({
-    1.0f, 0.0f, 0.0f, 0.0f,
-    0.0f, 1.0f, 0.0f, 0.0f,
-    0.0f, 0.0f, 1.0f, 0.0f,
-    x,    y,    z,    1.0f
+    1.0f, 0.0f, 0.0f, x,
+    0.0f, 1.0f, 0.0f, y,
+    0.0f, 0.0f, 1.0f, z,
+    0.0f, 0.0f, 0.0f, 1.0f
   });
 }
 

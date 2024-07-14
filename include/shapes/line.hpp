@@ -1,17 +1,21 @@
 #ifndef LINE_HPP
 #define LINE_HPP
 
+#include "color.hpp"
 #include "object.hpp"
 #include "vec3.hpp"
 #include "render_options.hpp"
 #include "json.hpp"
+#include "camera.hpp"
 
 class Renderer; // Forward declaration
 class RenderOptions; // Forward declaration
 
+const float DEFAULT_STROKE_WEIGHT = 1.0f;
+
 class Line : public Object {
   public:
-    Line(Vec3 start = Vec3(), Vec3 end = Vec3());
+    Line(Vec3 start = Vec3(), Vec3 end = Vec3(), const Color& color = Color(), float stokeWeight = DEFAULT_STROKE_WEIGHT);
     ~Line() override = default; // Default destructor
 
     const Vec3 getStart() const { return start; }
@@ -38,13 +42,16 @@ class Line : public Object {
       );
     }
 
+    float calculateDistance(const Camera& camera) const override;
+
     json toJSON() const override;
     void fromJSON(const json& j) override;
 
-    void render(const Renderer& renderer, const RenderOptions& options) override;
+    void render(const Renderer& renderer, const Camera& camera,const RenderOptions& options) override;
 
   private:
     Vec3 start, end;
+    float strokeWeight;
 };
 
 #endif

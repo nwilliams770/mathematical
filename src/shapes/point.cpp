@@ -4,7 +4,13 @@
 #include "logging.hpp"
 #include "vec3.hpp"
 
-Point::Point(float x, float y, float z, const Color& color) : Object(color), position(x, y, z) {}
+Point::Point(float x, float y, float z, const Color& color, float size)
+  : Object(color), position(x, y, z), size(size) {}
+
+float Point::calculateDistance(const Camera& camera) const
+{
+  return (position - camera.getPosition()).magnitude();
+}
 
 json Point::toJSON() const
 {
@@ -22,8 +28,16 @@ void Point::fromJSON(const json& j)
   setColor(Color::fromJSON(j[JsonKeys::COLOR]));
 }
 
-void Point::render(const Renderer& renderer, const RenderOptions& options) {
-  renderer.setColor(color);
-  renderer.renderPoint(position);
+void Point::render(const Renderer& renderer, const Camera& camera,const RenderOptions& options) {
+  float distance = calculateDistance(camera);
+  int distanceOpacity = Renderer::calculateOpacity(distance, camera.getFrustum());
+  int renderOpacity = (color.getOpacity() * distanceOpacity) / 255; // TODO const
+
+  Color renderColor = color;
+  renderColor.setOpacity(renderOpacity);
+
+  renderer.setColor(renderColor);
+  renderer.renderPoint(position, size);
+
   renderBoundingBox(renderer, options);
 }

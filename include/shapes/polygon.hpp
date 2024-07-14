@@ -2,15 +2,17 @@
 #define POLYGON_HPP
 
 #include <vector>
+#include "color.hpp"
 #include "object.hpp"
 #include "vec3.hpp"
+#include "camera.hpp"
 
 class Renderer; // Forward declaration
 class RenderOptions; // Forward declaration
 
 class Polygon : public Object {
   public:
-    Polygon(const std::vector<Vec3>& points = {});
+    Polygon(const std::vector<Vec3>& points = {}, const Color& color = Color());
     ~Polygon() override = default; // Default destructor
 
     const std::vector<Vec3>& getPoints() const { return points; }
@@ -44,7 +46,9 @@ class Polygon : public Object {
     json toJSON() const override;
     void fromJSON(const json& j) override;
 
-    void render(const Renderer& renderer, const RenderOptions& options) override;
+    float calculateDistance(const Camera& camera) const override;
+
+    void render(const Renderer& renderer, const Camera& camera,const RenderOptions& options) override;
 
   private:
     std::vector<Vec3> points;

@@ -10,13 +10,12 @@ namespace RendererConstants
   const int INITIAL_WINDOW_HEIGHT = 600;
 
   // View Frustum
-  const float FIELD_OF_VIEW_Y = 60.0f * (3.14159f / 180.0f); // 60 degrees to radians
-  const float NEAR_CLIP = 0.1f;
-  const float FAR_CLIP = 2000.0f;
+  const float FIELD_OF_VIEW_Y =  45.0f * (3.14159f / 180.0f); // 45 degrees
+  const float NEAR_CLIP = 2.0f;
+  const float FAR_CLIP = 1000.0f;
 
-
-  const int SCALE = 50;
-  const float SCALE_FLOAT = 50.0f;
+  const int SCALE = 1;
+  const float SCALE_FLOAT = 1.0f;
 
   // Colors
   const int ALPHA_OPAQUE = 255;

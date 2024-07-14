@@ -1,5 +1,31 @@
 # mathematical
 
+# Notes
+
+TODOS:
+
+- Load from JSON to include size
+- Render frustum and debug it to get better near clip plane
+- Debug frustrum and maybe add opacity indicator on it to debug that
+
+    All object render methods
+
+ so I think a couple things might be wrong here, hoping to get your input. I'm doing this project to get better at graphics programming so really want to follow their standards and models while building up complexity in layers:
+
+- Objects not scaling based on distance:
+So maybe due to my own ignorance, I thought my perspective matrix would also help items scale based on distance but this isn't the case it seems like? What is typically used to do that?
+
+- My partner made a solid point about how our objects: We have a Object base class and Point, Line, and Polygon all inherit from it. My partner was referencing SVG when he said that point and line don't really mean anything, it's only when they have like a stroke weight that it worth drawing. But in our world, a point kinda corresponded to a single pixel BEFORE dealing with some sort of perspective scaling. How do other rendering engines or in general graphics engines or game engines deal with these concepts?
+
+- He also brought up a good point about the illusion of things fading out, like if an objcet is more than halfway towards the far clip, we should do something to make it seem like its fading out like alter opacity -- any thoughts?
+
+- Taking into account scale based on perspective, does the matrix already do that?
+- take into account opacity as things move further to the clip plane
+- Consider a point not really having an inherent size
+- Same with a line, if a line has no stroke weight it has no 'width' per se
+
+- potentially refactor shapes to consider this, like having object have a stroke
+
 # Suggested Order and Next Steps for Renderer Project
 
 ## Suggested Order
