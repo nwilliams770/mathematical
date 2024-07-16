@@ -29,6 +29,8 @@ class Object {
 
     virtual float calculateDistance(const Camera& camera) const = 0;
 
+    virtual std::vector<Vec3> toPolygon() const = 0;
+
   protected:
     Color color;
 

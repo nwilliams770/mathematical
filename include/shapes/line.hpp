@@ -44,6 +44,8 @@ class Line : public Object {
 
     float calculateDistance(const Camera& camera) const override;
 
+    std::vector<Vec3> toPolygon() const override;
+
     json toJSON() const override;
     void fromJSON(const json& j) override;
 

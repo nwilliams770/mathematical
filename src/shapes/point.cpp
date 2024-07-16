@@ -12,6 +12,18 @@ float Point::calculateDistance(const Camera& camera) const
   return (position - camera.getPosition()).magnitude();
 }
 
+std::vector<Vec3> Point::toPolygon() const
+{
+  // Position for drawing represents center of the point
+  float halfSize = size / 2.0f;
+  return {
+      Vec3(position.x - halfSize, position.y - halfSize, position.z),
+      Vec3(position.x + halfSize, position.y - halfSize, position.z),
+      Vec3(position.x + halfSize, position.y + halfSize, position.z),
+      Vec3(position.x - halfSize, position.y + halfSize, position.z)
+  };
+}
+
 json Point::toJSON() const
 {
   return json{

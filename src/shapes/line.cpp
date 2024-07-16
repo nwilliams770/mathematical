@@ -1,3 +1,4 @@
+#include <cmath>
 #include "line.hpp"
 #include "renderer.hpp"
 #include "vec3.hpp"
@@ -11,6 +12,30 @@ float Line::calculateDistance(const Camera& camera) const
   float distanceEnd = (end - camera.getPosition()).magnitude();
 
   return (distanceStart + distanceEnd) / 2.0f;
+}
+
+std::vector<Vec3> Line::toPolygon() const
+{
+  float halfStrokeWeight = strokeWeight / 2.0f;
+  Vec3 direction = (end - start).normalize();
+
+  Vec3 arbitraryVector;
+  if (fabs(direction.x) < 0.1f && fabs(direction.y) < 0.1f) {
+    // Use Y axis if direction is close to Z axis
+    arbitraryVector = Vec3(0.0f, 1.0f, 0.0f);
+  } else {
+    arbitraryVector = Vec3(0.0f, 0.0f, 1.0f);
+  }
+
+  Vec3 perpendicular = direction.cross(arbitraryVector).normalized();
+  Vec3 offset = perpendicular * halfStrokeWeight;
+
+  return {
+    start - offset,
+    start + offset,
+    end + offset,
+    end - offset
+  };
 }
 
 
