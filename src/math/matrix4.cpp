@@ -43,14 +43,31 @@ Matrix4 Matrix4::translate(float x, float y, float z) {
 }
 
 Matrix4 Matrix4::perspective(float fieldOfViewYRadians, float aspectRatio, float nearClip, float farClip) {
-  float zoomY = 1 / std::tan(fieldOfViewYRadians / 2);
+  float zoomY = 1.0f / std::tan(fieldOfViewYRadians / 2.0f);
   float zoomX = zoomY / aspectRatio;
-  return Matrix4({
+  // Chat GPT generated
+    return Matrix4({
     zoomX, 0.0f, 0.0f, 0.0f,
     0.0f, zoomY, 0.0f, 0.0f,
-    0.0f, 0.0f, ((farClip + nearClip) / (farClip - nearClip)), 1.0f,
-    0.0f, 0.0f, ((-2.0f * nearClip * farClip) / (farClip - nearClip)), 0.0f
+    0.0f, 0.0f, farClip / (farClip - nearClip), 1.0f,
+    0.0f, 0.0f, (-nearClip * farClip) / (farClip - nearClip), 0.0f
   });
+  // Game math
+  // return Matrix4({
+  //   zoomX, 0.0f, 0.0f, 0.0f,
+  //   0.0f, zoomY, 0.0f, 0.0f,
+  //   0.0f, 0.0f, ((farClip + nearClip) / (farClip - nearClip)), -1.0f,
+  //   0.0f, 0.0f, ((2.0f * nearClip * farClip) / (farClip - nearClip)), 0.0f
+  // });
+  // Scratch a pixel
+    // float scale = 1.0f / std::tan(fieldOfViewYRadians / 2.0f);
+    // LOG_ARGS("Perspective matrix generation scale:", scale, "FOV", fieldOfViewYRadians, "near", nearClip, "far", farClip);
+    // return Matrix4({
+    //     scale / aspectRatio, 0.0f, 0.0f, 0.0f,
+    //     0.0f, scale, 0.0f, 0.0f,
+    //     0.0f, 0.0f, farClip / (farClip - nearClip), 1.0f,
+    //     0.0f, 0.0f, -nearClip * farClip / (farClip - nearClip), 0.0f
+    // });
 }
 // Static methods
 Matrix4 Matrix4::identity()

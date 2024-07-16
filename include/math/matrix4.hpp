@@ -10,7 +10,7 @@ class Matrix4 {
     Matrix4(const std::array<float, 16>& values);
 
     static Matrix4 identity();
-    static Matrix4 perspective(float fov, float aspect, float near, float far);
+    static Matrix4 perspective(float fieldOfViewYRadians, float aspectRatio, float nearClip, float farClip);
     static Matrix4 translate(float x, float y, float z);
 
     Vec4 transform(const Vec4& vec) const;

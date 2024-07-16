@@ -144,8 +144,8 @@ void Renderer::drawPoint(int x, int y, float size) const
 {
   int intSize = static_cast<int>(size);
   SDL_Rect rect;
-  rect.x = x;
-  rect.y = y;
+  rect.x = x - size / 2; // center before draw
+  rect.y = y - size / 2; // center before draw
   rect.w = intSize;
   rect.h = intSize;
   SDL_RenderFillRect(renderer, &rect);

@@ -72,7 +72,7 @@ bool ViewFrustum::isAABBInside(const Vec3& min, const Vec3& max) const
 
       Vec4 clipSpaceVertex = viewProjectionMatrix * Vec4(worldSpaceVertex, 1.0f);
 
-      LOG_ARGS("Clip space vertex of AABB:", "x", clipSpaceVertex.x, "y", clipSpaceVertex.y, "z", clipSpaceVertex.z, "w", clipSpaceVertex.w);
+      LOG_ARGS("Transformed Clip space vertex of AABB:", "x", clipSpaceVertex.x, "y", clipSpaceVertex.y, "z", clipSpaceVertex.z, "w", clipSpaceVertex.w);
 
       if (clipSpaceVertex.w <= 0.0f ||
           clipSpaceVertex.x < -clipSpaceVertex.w || clipSpaceVertex.x > clipSpaceVertex.w ||

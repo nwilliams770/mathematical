@@ -11,8 +11,8 @@ namespace RendererConstants
 
   // View Frustum
   const float FIELD_OF_VIEW_Y =  45.0f * (3.14159f / 180.0f); // 45 degrees
-  const float NEAR_CLIP = 2.0f;
-  const float FAR_CLIP = 1000.0f;
+  const float NEAR_CLIP = 0.1f;
+  const float FAR_CLIP = 500.0f;
 
   const int SCALE = 1;
   const float SCALE_FLOAT = 1.0f;

@@ -19,6 +19,8 @@ Camera::Camera(const ViewFrustum& frustum, const Vec3& position , const Vec3& di
 // This is also known as the "view transform."
 Matrix4 Camera::getViewMatrix() const
 {
+  LOG_ARGS("Camera position at generation of view matrix", position.x, position.y, position.z);
+
   Vec3 cameraForward = direction.normalized();
   LOG_ARGS("Generating view matrix, camera forward normalized", cameraForward.x, cameraForward.y, cameraForward.z);
 
