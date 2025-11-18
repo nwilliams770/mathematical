@@ -30,8 +30,6 @@ class Point : public Object {
     json toJSON() const override;
     void fromJSON(const json& j) override;
 
-    void render(const Renderer& renderer, const Camera& camera,const RenderOptions& options) override;
-
   private:
     Vec3 position;
     float size;

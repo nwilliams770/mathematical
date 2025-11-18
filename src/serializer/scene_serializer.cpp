@@ -9,7 +9,6 @@
 
 void SceneSerializer::save(const SaveData& data, const std::string& filename)
 {
-  LOG("SceneSerializer save called");
   std::string fileToSave = filename.empty() ? generateDefaultFileName() : filename;
   std::ofstream file(fileToSave);
   if (!file.is_open())
@@ -17,14 +16,12 @@ void SceneSerializer::save(const SaveData& data, const std::string& filename)
     throw std::runtime_error("Could not open file for writing: " + fileToSave);
   }
   json j = data.toJSON();
-  // LOG("Serialized JSON: " + j.dump(4));
   file << j.dump(4);
   file.close();
 }
 
 void SceneSerializer::load(SaveData& data, const std::string& filename)
 {
-  LOG("SceneSerializer load called with filename: " + filename);
   std::ifstream file(filename);
   if (!file.is_open()) {
     throw std::runtime_error("Could not open file for reading: " + filename);

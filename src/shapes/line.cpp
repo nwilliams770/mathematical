@@ -46,6 +46,7 @@ json Line::toJSON() const
       {{JsonKeys::X, start.x}, {JsonKeys::Y, start.y}, {JsonKeys::Z, start.z},},
       {{JsonKeys::X, end.x}, {JsonKeys::Y, end.y}, {JsonKeys::Z, end.z},},
     },
+    {JsonKeys::STROKE_WEIGHT, strokeWeight},
     {JsonKeys::COLOR, color.toJSON()},
   };
 }
@@ -58,20 +59,6 @@ void Line::fromJSON(const json& j)
   end = Vec3(
     j[JsonKeys::VERTICES][1][JsonKeys::X], j[JsonKeys::VERTICES][1][JsonKeys::Y], j[JsonKeys::VERTICES][1][JsonKeys::Z]
   );
+  strokeWeight = j[JsonKeys::STROKE_WEIGHT];
   setColor(Color::fromJSON(j[JsonKeys::COLOR]));
 }
-
-
-void Line::render(const Renderer& renderer, const Camera& camera, const RenderOptions& options) {
-  float distance = calculateDistance(camera);
-  int distanceOpacity = Renderer::calculateOpacity(distance, camera.getFrustum());
-  int renderOpacity = (color.getOpacity() * distanceOpacity) / 255; // TODO const
-
-  Color renderColor = color;
-  renderColor.setOpacity(renderOpacity);
-
-  renderer.setColor(renderColor);
-  renderer.renderLine(start, end, strokeWeight);
-
-  renderBoundingBox(renderer, options);
-};

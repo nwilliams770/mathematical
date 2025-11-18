@@ -91,10 +91,12 @@ void Camera::moveForward(float distance) { move(direction * distance); }
 void Camera::moveBackward(float distance) { move(direction * -distance); }
 void Camera::moveLeft(float distance) {
     Vec3 left = direction.cross(up).normalize();
+    LOG_ARGS("Moving left: (", left.x, ",", left.y, ",", left.z, ")", "by", distance);
     move(left * distance);
 }
 void Camera::moveRight(float distance) {
     Vec3 right = up.cross(direction).normalize();
+    LOG_ARGS("Moving right: (", right.x, ",", right.y, ",", right.z, ")", "by", distance);
     move(right * distance);
 }
 

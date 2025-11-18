@@ -7,8 +7,8 @@
 
 Scene::Scene() {}
 
-Scene::~Scene() {
-  LOG("Scene destructor called");
+Scene::~Scene()
+{
   clear();
 }
 
@@ -58,7 +58,6 @@ json Scene::toJSON() const {
 }
 
 void Scene::fromJSON(const json& j) {
-  LOG("Scene fromJSON called");
   clear();
   name = j[JsonKeys::METADATA][JsonKeys::NAME];
 
@@ -67,20 +66,16 @@ void Scene::fromJSON(const json& j) {
     Object* obj = nullptr;
 
     if (vertexCount == 1) {
-      LOG("Point detected when loading from file");
       obj = new Point();
     } else if (vertexCount == 2) {
-      LOG("Line detected when loading from file");
       obj = new Line();
     } else if (vertexCount >= 3) {
-      LOG("Polygon detected when loading from file");
       obj = new Polygon();
     }
 
     if (obj) {
       obj->fromJSON(item);
       addObject(obj);
-      LOG("Object loaded and added to scene");
     }
   }
 }
@@ -92,5 +87,4 @@ void Scene::clear()
     delete obj;
   }
   objects.clear();
-  LOG("Scene cleared");
 }

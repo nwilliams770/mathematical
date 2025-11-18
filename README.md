@@ -8,23 +8,179 @@ TODOS:
 - Render frustum and debug it to get better near clip plane
 - Debug frustrum and maybe add opacity indicator on it to debug that
 
-    All object render methods
+DO THESE FIRST:
 
- so I think a couple things might be wrong here, hoping to get your input. I'm doing this project to get better at graphics programming so really want to follow their standards and models while building up complexity in layers:
+1. Line with a Stroke Weight
+When dealing with a line that has a stroke weight, you are correct that the toPolygon method should return 4 vertices, representing the four corners of the rectangle that represents the line's thickness. Here’s how it would work:
 
-- Objects not scaling based on distance:
-So maybe due to my own ignorance, I thought my perspective matrix would also help items scale based on distance but this isn't the case it seems like? What is typically used to do that?
+cpp
+Copy code
+std::vector<Vec3> Line::toPolygon() const {
+    float halfWeight = strokeWeight / 2.0f;
+    Vec3 direction = (end - start).normalized();
+    Vec3 perpendicular = Vec3(-direction.y, direction.x, direction.z).normalized() * halfWeight;
 
-- My partner made a solid point about how our objects: We have a Object base class and Point, Line, and Polygon all inherit from it. My partner was referencing SVG when he said that point and line don't really mean anything, it's only when they have like a stroke weight that it worth drawing. But in our world, a point kinda corresponded to a single pixel BEFORE dealing with some sort of perspective scaling. How do other rendering engines or in general graphics engines or game engines deal with these concepts?
+    return {
+        start - perpendicular,
+        start + perpendicular,
+        end + perpendicular,
+        end - perpendicular
+    };
+}
+2. projectTo2DAndSize
+You're right. With the new approach, projectTo2DAndSize is not necessary for the drawing process. Instead, each vertex of the polygon is projected independently, and the size is implied by the relative positions of the projected vertices.
 
-- He also brought up a good point about the illusion of things fading out, like if an objcet is more than halfway towards the far clip, we should do something to make it seem like its fading out like alter opacity -- any thoughts?
+3. Using SDL_RenderDrawLine vs. Bresenham's Algorithm
+I used SDL_RenderDrawLine for simplicity, but since this is a learning project and you want to minimize library use, you should indeed use your own Bresenham's algorithm. The important part is that you handle the vertices correctly and draw lines between them.
 
-- Taking into account scale based on perspective, does the matrix already do that?
-- take into account opacity as things move further to the clip plane
-- Consider a point not really having an inherent size
-- Same with a line, if a line has no stroke weight it has no 'width' per se
+4. Filling Polygons
+To fill polygons instead of just drawing the outline, you would typically use a polygon filling algorithm. One common algorithm is the scanline fill algorithm. SDL does not have built-in support for polygon filling, so you would need to implement this yourself.
 
-- potentially refactor shapes to consider this, like having object have a stroke
+Here’s a high-level approach to filling a polygon:
+
+Sort the Vertices: Sort the vertices of the polygon by their y-coordinates.
+Edge Table and Active Edge Table: Construct an edge table and use an active edge table during scan conversion to track intersections.
+Fill the Spans: For each scanline, fill the spans between intersections.
+Implementation
+Let’s walk through how you can implement the changes:
+
+Clip and Draw Polygon
+cpp
+Copy code
+void Renderer::drawPolygon(const std::vector<Vec3>& vertices) const {
+    // Project vertices to 2D screen coordinates
+    std::vector<std::pair<int, int>> projectedVertices;
+    for (const auto& vertex : vertices) {
+        auto [x, y] = projectTo2D(vertex);
+        projectedVertices.emplace_back(x, y);
+    }
+
+    // Fill the polygon
+    fillPolygon(projectedVertices);
+}
+Fill Polygon Method
+cpp
+Copy code
+void Renderer::fillPolygon(const std::vector<std::pair<int, int>>& vertices) const {
+    // Edge table and active edge table logic
+    // Implement the scanline fill algorithm
+
+    // Sort the vertices by y-coordinate
+    std::vector<std::pair<int, int>> sortedVertices = vertices;
+    std::sort(sortedVertices.begin(), sortedVertices.end(), [](const auto& a, const auto& b) {
+        return a.second < b.second;
+    });
+
+    // Edge table
+    struct Edge {
+        int yMax;
+        float xMin, inverseSlope;
+    };
+    std::vector<std::vector<Edge>> edgeTable;
+
+    // Initialize the edge table
+    for (size_t i = 0; i < sortedVertices.size(); ++i) {
+        auto [x1, y1] = sortedVertices[i];
+        auto [x2, y2] = sortedVertices[(i + 1) % sortedVertices.size()];
+
+        if (y1 != y2) {
+            float inverseSlope = static_cast<float>(x2 - x1) / static_cast<float>(y2 - y1);
+            edgeTable[y1].push_back(Edge{y2, static_cast<float>(x1), inverseSlope});
+        }
+    }
+
+    // Active edge table
+    std::vector<Edge> activeEdgeTable;
+    int currentY = sortedVertices.front().second;
+
+    // Scanline fill
+    while (!activeEdgeTable.empty() || currentY <= sortedVertices.back().second) {
+        // Add edges to active edge table
+        for (const auto& edge : edgeTable[currentY]) {
+            activeEdgeTable.push_back(edge);
+        }
+
+        // Remove edges from active edge table
+        activeEdgeTable.erase(std::remove_if(activeEdgeTable.begin(), activeEdgeTable.end(),
+            [currentY](const Edge& edge) { return edge.yMax <= currentY; }), activeEdgeTable.end());
+
+        // Sort active edge table by xMin
+        std::sort(activeEdgeTable.begin(), activeEdgeTable.end(), [](const Edge& a, const Edge& b) {
+            return a.xMin < b.xMin;
+        });
+
+        // Fill spans between pairs of intersections
+        for (size_t i = 0; i < activeEdgeTable.size(); i += 2) {
+            int xStart = static_cast<int>(activeEdgeTable[i].xMin);
+            int xEnd = static_cast<int>(activeEdgeTable[i + 1].xMin);
+            for (int x = xStart; x <= xEnd; ++x) {
+                SDL_RenderDrawPoint(renderer, x, currentY);
+            }
+        }
+
+        // Increment y and update xMin values in active edge table
+        ++currentY;
+        for (auto& edge : activeEdgeTable) {
+            edge.xMin += edge.inverseSlope;
+        }
+    }
+}
+Integrate Clipping and Drawing
+Now integrate the clipping and drawing logic into the rendering methods:
+
+For Points:
+
+cpp
+Copy code
+void Point::render(const Renderer& renderer, const Camera& camera, const RenderOptions& options) {
+    auto polygon = toPolygon();
+    renderer.renderPolygon(polygon, camera.getFrustum());
+}
+For Lines:
+
+cpp
+Copy code
+void Line::render(const Renderer& renderer, const Camera& camera, const RenderOptions& options) {
+    auto polygon = toPolygon();
+    renderer.renderPolygon(polygon, camera.getFrustum());
+}
+For Polygons:
+
+cpp
+Copy code
+void Polygon::render(const Renderer& renderer, const Camera& camera, const RenderOptions& options) {
+    auto polygon = toPolygon();
+    renderer.renderPolygon(polygon, camera.getFrustum());
+}
+Rendering Scene
+Ensure the scene rendering method uses the updated render methods:
+
+cpp
+Copy code
+void Renderer::renderScene(const Scene& scene, const ViewFrustum& frustum, const Camera& camera, const RenderOptions& options) {
+    for (const auto& object : scene.getObjects()) {
+        auto polygon = object->toPolygon();
+        std::vector<Vec3> clippedPolygon = polygon;
+
+        // Clip the polygon against the frustum planes
+        auto planes = frustum.getFrustumPlanes();
+        for (const auto& plane : planes) {
+            clippedPolygon = MathUtility::sutherlandHodgmanClip(clippedPolygon, plane.normal, plane.distance);
+        }
+
+        // Render the clipped polygon
+        if (!clippedPolygon.empty()) {
+            drawPolygon(clippedPolygon);
+        }
+    }
+}
+Summary
+Convert All Objects to Polygons: Implement toPolygon methods for points, lines, and polygons.
+Clip Polygons: Clip polygons using the Sutherland-Hodgman algorithm against the frustum planes.
+Generalized Draw Polygon Method: Implement a method to draw the resulting clipped polygons.
+Implement Scanline Fill Algorithm: To fill the polygons instead of just drawing outlines.
+Update Render Methods: Update the render methods of Point, Line, and Polygon to utilize the new clipping and drawing methods.
+By treating everything as polygons and handling clipping uniformly, you achieve a clean and consistent rendering pipeline that adheres to modern graphics programming practices.
 
 # Suggested Order and Next Steps for Renderer Project
 

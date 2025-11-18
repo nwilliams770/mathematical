@@ -12,20 +12,6 @@
 #include "view_frustum.hpp"
 #include "point.hpp"
 
-// void mainLoop(Renderer& renderer, Scene& scene, ViewFrustum& frustum, Camera& mainCamera, const RenderOptions& options) {
-//         // Clear screen
-
-//         Object* point = new Point(0.0f, 0.0f, 5.0f, RendererConstants::DEBUG_COLOR);
-//         scene.addObject(point);
-//         renderer.clear();
-
-//         // Render the scene step by step
-//         renderer.renderStepByStep(scene, frustum, mainCamera, options);
-
-//         // Present rendered frame
-//         renderer.present();
-// }
-
 int main(int argc, char* argv[])
 {
   Scene scene;
@@ -36,11 +22,11 @@ int main(int argc, char* argv[])
                         RendererConstants::NEAR_CLIP,
                         RendererConstants::FAR_CLIP);
   Camera mainCamera(frustum);
-  Camera debugCamera(frustum);
+  Camera debugCamera(frustum, Vec3(10.0f, 0.0f, 2.5f), Vec3(-1.0f, 0.0f, 0.0f));
   Renderer renderer (frustum);
-  EventManager eventManager(mainCamera, debugCamera, renderer);
+  EventManager eventManager(mainCamera, debugCamera, renderer, options);
 
-  Point testPoint = Point(0.0f, 0.0f, 10.0f, RendererConstants::DEBUG_COLOR, 500.0f);
+  Point testPoint = Point(0.0f, 0.0f, 10.0f, RendererConstants::DEBUG_COLOR, 100.0f);
   scene.addObject(&testPoint);
 
   std::vector<Options::Flag> flags = OptionsUtility::parseCommandLineArguments(argc, argv);
@@ -48,17 +34,13 @@ int main(int argc, char* argv[])
   {
     switch(flag)
     {
-      // TODO: Make this grid better if not get rid of
-      case(Options::Flag::Grid):
-        renderer.enableGrid(true);
-        break;
       case(Options::Flag::LoadFromPath):
         loadPath = OptionsUtility::getOptionValue(argc, argv, Options::LOAD_FROM_PATH);
       case(Options::Flag::RenderBoundingBoxes):
         options.renderBoundingBoxes = true;
         break;
       case(Options::Flag::RenderFrustrum):
-        options.renderFrustrum = true;
+        options.renderFrustum = true;
         break;
       default:
         break;
@@ -95,15 +77,13 @@ int main(int argc, char* argv[])
     eventManager.handleEvents(running);
     renderer.clear();
 
-    frustum.update(mainCamera);
-
     const Camera& activeCamera = renderer.isDebugViewEnabled() ? debugCamera : mainCamera;
+
+    frustum.update(activeCamera);
 
     renderer.renderScene(scene, frustum, activeCamera, options);
     renderer.present();
   }
-    // mainLoop(renderer, scene, frustum, mainCamera, options);
-
     return 0;
 }
 

@@ -8,6 +8,7 @@
 class Camera;
 class Renderer;
 class RenderOptions;
+class Plane;
 
 class ViewFrustum
 {
@@ -15,14 +16,13 @@ class ViewFrustum
     ViewFrustum(float fieldOfViewYRadians, float aspectRatio, float nearClip, float farClip);
 
     void update(const Camera& camera);
-    // Check if an axis-aligned bounding box is inside the frustum
-    bool isAABBInside(const Vec3& min, const Vec3& max) const;
 
     Matrix4 getPerspectiveMatrix() const;
     void updateViewProjectionMatrix(const Camera& camera);
     Matrix4 getViewProjectionMatrix() const { return viewProjectionMatrix; }
     float getNearClip() const { return nearClip; }
     float getFarClip() const { return farClip; }
+    std::array<Plane, 6> getFrustumPlanes() const;
 
     void render(const Renderer& renderer, const RenderOptions& options) const;
 

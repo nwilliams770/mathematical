@@ -4,7 +4,7 @@
 class RenderOptions {
 public:
     bool renderBoundingBoxes;
-    bool renderFrustrum;
+    bool renderFrustum;
 
     RenderOptions() : renderBoundingBoxes(false) {}
 };

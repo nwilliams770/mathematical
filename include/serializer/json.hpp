@@ -16,7 +16,8 @@ namespace JsonKeys {
     const std::string X = "x";
     const std::string Y = "y";
     const std::string Z = "z";
-
+    const std::string SIZE = "size";
+    const std::string STROKE_WEIGHT = "stroke_weight";
 
     const std::string SCENE = "scene";
     const std::string METADATA = "metadata";

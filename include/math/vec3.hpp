@@ -89,8 +89,6 @@ class Vec3
         x /= magnitude;
         y /= magnitude;
         z /= magnitude;
-      } else {
-        // LOG("Attempted to normalize a zero-length vector");
       }
       return *this;
     }
@@ -102,7 +100,6 @@ class Vec3
       {
         return Vec3(x / magnitude, y / magnitude, z / magnitude);
       } else {
-        // LOG("Attempted to normalize a zero-length vector");
         return Vec3();
       }
     }

@@ -25,9 +25,8 @@ class Renderer {
     void present();
 
     void renderScene(const Scene& scene, const ViewFrustum& frustum, const Camera& camera, const RenderOptions& options);
-    void renderPoint(const Vec3& point, float size) const;
-    void renderLine(const Vec3& start, const Vec3& end, float strokeWeight) const;
     void renderPolygon(const std::vector<Vec3>& vertices) const;
+    void fillPolygon(const std::vector<std::pair<int, int>>& projectedVertices) const;
     // void renderFrustum(const std::vector<Vec3>& corners) const;
     // TODO remove?
     // void renderNormal(const Vec3& start, const Vec3& normal) const;
@@ -39,23 +38,13 @@ class Renderer {
 
 
     // Debugging
-    // TODO remove?
-    void enableGrid(bool enable);
-    // TODO remove
-    void drawGrid();
     bool isDebugViewEnabled() { return debugViewEnabled; }
     void toggleDebugView() { debugViewEnabled = !debugViewEnabled; }
 
     static float focalLength;
 
   private:
-  // TODO: eventually toggle between circle/square
-    void drawPoint(int x, int y, float size) const;
-    void drawSquare(int x, int y, float size) const;
-    void drawLineBresenham(int x1, int y1, int x2, int y2, float startProjectedStrokeWeight, float endProjectedStrokeWeight) const;
-
-    std::tuple<int, int, float> projectTo2DAndSize(const Vec3& point, float size) const;
-
+    std::pair<int, int> projectTo2D(const Vec3& point) const;
 
     SDL_Window* window;
     SDL_Renderer* renderer;

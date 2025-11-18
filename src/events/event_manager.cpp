@@ -3,8 +3,8 @@
 #include "logging.hpp"
 
 
-EventManager::EventManager(Camera& mainCamera, Camera& debugCamera, Renderer& renderer)
-  : mainCamera(mainCamera), debugCamera(debugCamera), renderer(renderer) {}
+EventManager::EventManager(Camera& mainCamera, Camera& debugCamera, Renderer& renderer, RenderOptions& renderOptions)
+  : mainCamera(mainCamera), debugCamera(debugCamera), renderer(renderer), renderOptions(renderOptions) {}
 
 void EventManager::handleEvents(bool& running)
 {
@@ -28,9 +28,10 @@ void EventManager::handleKeyPress(SDL_Keycode key, Camera& activeCamera) {
   float moveDistance = 1.0f; // Define movement step size
   float rotateAngle = 0.1f;  // Define rotation step size in radians
 
-  LOG("Handling key press");
   switch (key) {
     case SDLK_t:
+      renderOptions.renderFrustum = !renderOptions.renderFrustum; // Toggle frustum rendering
+
       renderer.toggleDebugView();
       break;
     case SDLK_w:

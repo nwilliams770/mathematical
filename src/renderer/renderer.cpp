@@ -8,6 +8,7 @@
 #include "view_frustum.hpp"
 #include "camera.hpp"
 #include "math_utility.hpp"
+#include "plane.hpp"
 
 float Renderer::focalLength = 100.0f;
 
@@ -83,24 +84,45 @@ void Renderer::setColor(const Color& color) const {
   SDL_SetRenderDrawColor(renderer, sdlColor.r, sdlColor.g, sdlColor.b, sdlColor.a);
 }
 
-std::tuple<int, int, float> Renderer::projectTo2DAndSize(const Vec3& point, float size) const {
+std::pair<int, int> Renderer::projectTo2D(const Vec3& point) const {
   int width = RendererConstants::INITIAL_WINDOW_WIDTH;
   int height = RendererConstants::INITIAL_WINDOW_HEIGHT;
+  int winCenterX = width / 2;
+  int winCenterY = height / 2;
 
   Vec4 transformedPoint = frustum.getViewProjectionMatrix() * Vec4(point, 1.0f);
+  LOG_ARGS("Transformed Point:", transformedPoint.x, transformedPoint.y, transformedPoint.z, transformedPoint.w);
 
-  float perspectiveScale = 1.0f / transformedPoint.w;
-  int projectedSize = size * perspectiveScale;
+  // Check for precision issues
+  if (fabs(transformedPoint.w) < 1e-6) {
+    LOG_ARGS("Warning: Potential precision issue with w coordinate:", transformedPoint.w);
+  }
 
   // Normalized device coordinates
+  // NOTE: these seem more like screen space coordinates between -1 and 1
   float xNDC = transformedPoint.x / transformedPoint.w;
   float yNDC = transformedPoint.y / transformedPoint.w;
+  LOG_ARGS("NDC:", xNDC, yNDC);
+
+  // NOTE: NDCs are once they are in the range of 0 to 1.
+  // (1 + xNDC) / 2;
+  // (1 + yNDC) / 2;
 
   // Convert NDC to screen coordinates where origin is the center of the screen
-  int xScreen = static_cast<int>((xNDC * 0.5f + 0.5f) * width);
-  int yScreen = static_cast<int>((-yNDC * 0.5f + 0.5f) * height);
+  // int xScreen = static_cast<int>((xNDC * 0.5f + 0.5f) * width);
+  // int yScreen = static_cast<int>((-yNDC * 0.5f + 0.5f) * height);
+  // LOG_ARGS("Screen Coordinates:", xScreen, yScreen);
 
-  return {xScreen, yScreen, projectedSize};
+  // int xScreen = static_cast<int>((xNDC * width)/(2.0f * transformedPoint.w) + (width/2.0f));
+  // int yScreen = static_cast<int>(-(yNDC * height)/(2.0f * transformedPoint.w) + (height/2.0f));
+
+  int xScreen = static_cast<int>((xNDC * width / 2.0f) + winCenterX);
+  int yScreen = static_cast<int>((-yNDC * height / 2.0f) + winCenterY);
+
+
+  LOG_ARGS("NDC to screen conversion:", "NDC x", xNDC, "NDC y", yNDC, "Screen x", xScreen, "Screen y", yScreen);
+
+  return {xScreen, yScreen};
 }
 
 
@@ -119,203 +141,106 @@ int Renderer::calculateOpacity(float distance, const ViewFrustum& frustum) {
 
 void Renderer::renderScene(const Scene& scene, const ViewFrustum& frustum, const Camera& camera, const RenderOptions& options)
 {
+  std::array<Plane, 6> frustumPlanes = frustum.getFrustumPlanes();
   for (const auto& object : scene.getObjects())
   {
-    Vec3 min = object->getMin();
-    Vec3 max = object->getMax();
-
-    if (frustum.isAABBInside(min, max))
+    std::vector<Vec3> vertices = object->toPolygon();
+    LOG("Vertices Pre clipping:");
+    for (const auto& vertex : vertices)
     {
-      LOG("Rendering object, inside frustum");
-      object->render(*this, camera, options);
+      LOG_ARGS("x", vertex.x, "y", vertex.y, "z", vertex.z);
     }
+    for (const auto& plane : frustumPlanes)
+    {
+      vertices = MathUtility::sutherlandHodgmanClip(vertices, plane);
+    }
+
+    LOG("Vertices Post clipping:");
+    for (const auto& vertex : vertices)
+    {
+      LOG_ARGS("x", vertex.x, "y", vertex.y, "z", vertex.z);
+    }
+    if (vertices.size() > 2)
+    {
+      Color renderColor = object->getRenderColor(camera);
+      setColor(renderColor);
+      LOG("Rendering polygon");
+      renderPolygon(vertices);
+    }
+    else
+    {
+      LOG("Not rendering polygon");
+    }
+
   }
 
-  // frustum.render(*this, options);
+  frustum.render(*this, options);
 }
 
-void Renderer::renderPoint(const Vec3& point, float size) const
-{
-  auto [x, y, projectSized] = projectTo2DAndSize(point, size);
-  drawPoint(x, y, projectSized);
-}
-
-void Renderer::drawPoint(int x, int y, float size) const
-{
-  int intSize = static_cast<int>(size);
-  SDL_Rect rect;
-  rect.x = x - size / 2; // center before draw
-  rect.y = y - size / 2; // center before draw
-  rect.w = intSize;
-  rect.h = intSize;
-  SDL_RenderFillRect(renderer, &rect);
-}
-
-void Renderer::renderLine(const Vec3& start, const Vec3& end, float strokeWeight) const
-{
-  auto [x1, y1, startProjectedStokeWeight] = projectTo2DAndSize(start, strokeWeight);
-  auto [x2, y2, endProjectedStrokeWeight] = projectTo2DAndSize(end, strokeWeight);
-  drawLineBresenham(x1, y1, x2, y2, startProjectedStokeWeight, endProjectedStrokeWeight);
-}
 
 void Renderer::renderPolygon(const std::vector<Vec3>& vertices) const
 {
-  // TODO: address this, not sure exactly how yet
-  const float defaultStrokeWeight = 1.0f;
-
-  for (size_t i = 0; i < vertices.size(); ++i)
+  std::vector<std::pair<int, int>> projectedVertices;
+  for (const auto& vertex : vertices)
   {
-    const Vec3& start = vertices[i];
-    const Vec3& end = vertices[(i + 1) % vertices.size()];
-    renderLine(start, end, defaultStrokeWeight);
+    auto [x, y] = projectTo2D(vertex);
+    projectedVertices.emplace_back(x, y);
   }
+
+    LOG("Vertices Post projection:");
+    for (const auto& [x, y] : projectedVertices)
+    {
+      LOG_ARGS("x", x, "y", y);
+    }
+
+  // Draw the outline
+  for (size_t i = 0; i < projectedVertices.size(); ++i) {
+    const auto& [x1, y1] = projectedVertices[i];
+    const auto& [x2, y2] = projectedVertices[(i + 1) % projectedVertices.size()];
+    SDL_RenderDrawLine(renderer, x1, y1, x2, y2);
+  }
+
+  fillPolygon(projectedVertices);
 }
 
-void Renderer::enableGrid(bool enable) { showGrid = enable; }
-
-void Renderer::drawGrid()
+void Renderer::fillPolygon(const std::vector<std::pair<int, int>>& projectedVertices) const
 {
-	if (!showGrid) return;
+  if (projectedVertices.size() < 3) return;
 
-  setColor(RendererConstants::GRID_COLOR);
-
-  for (int x = 0; x < width; x += RendererConstants::SCALE)
+  int minY = std::numeric_limits<int>::max();
+  int maxY = std::numeric_limits<int>::min();
+  for (const auto& [x, y] : projectedVertices)
   {
-    SDL_RenderDrawLine(renderer, x, 0, x, height);
+    if (y < minY) minY = y;
+    if (y > maxY) maxY = y;
   }
 
-  for (int y = 0; y < height; y += RendererConstants::SCALE)
+  for (int y = minY; y <= maxY; y++)
   {
-    SDL_RenderDrawLine(renderer, 0, y, width, y);
+    std::vector<int> intersections;
+
+    for (size_t i = 0; i < projectedVertices.size(); i++)
+    {
+      const auto& [x1, y1] = projectedVertices[i];
+      const auto& [x2, y2] = projectedVertices[(i + 1) % projectedVertices.size()];
+
+      // Check if the edge (v1, v2) intersects with the scanline y
+      if ((y1 <= y && y2 > y) || (y2 <= y && y1 > y)) {
+        float interpolationFactor = (y - y1) / (y2 - y1);
+        int x = static_cast<int>(MathUtility::lerp(x1, x2, interpolationFactor)); // X-coordinate of intersection
+        intersections.push_back(x);
+      }
+
+      std::sort(intersections.begin(), intersections.end());
+
+      // Fill between pairs of intersections
+      for (size_t i = 0; i < intersections.size(); i += 2) {
+        if (i + 1 < intersections.size()) {
+          int x1 = intersections[i];
+          int x2 = intersections[i + 1];
+          SDL_RenderDrawLine(renderer, x1, y, x2, y);
+        }
+      }
+    }
   }
 }
-
-void Renderer::drawLineBresenham(int x1, int y1, int x2, int y2, float startProjectedStokeWeight, float endProjectedFloatWeight) const {
-  int dx = abs(x2 - x1);
-  int dy = -abs(y2 - y1);
-  int stepX = x1 < x2 ? 1 : -1;
-  int stepY = y1 < y2 ? 1 : -1;
-  int error = dx + dy;
-
-  int length = std::max(dx, -dy);
-  int step = 0;
-
-  while (true)
-  {
-    float interpolationFactor = static_cast<float>(step) / static_cast<float>(length);
-    float strokeWeight = MathUtility::lerp(startProjectedStokeWeight, endProjectedFloatWeight, interpolationFactor);
-    drawPoint(x1, y1, strokeWeight);
-
-
-    if (x1 == x2 && y1 == y2) break;
-
-    int e2 = 2 * error;
-    if (e2 >= dy)
-    {
-      if (x1 == x2) break;
-      error += dy;
-      x1 += stepX;
-    }
-
-    if (e2 <= dx)
-    {
-      if (y1 == y2) break;
-      error += dx;
-      y1 += stepY;
-    }
-
-    step++;
-  }
-}
-
-// void Renderer::renderFrustum(const std::vector<Vec3>& corners) const {
-//     // Draw near clip plane
-//     renderLine(corners[0], corners[1]);
-//     renderLine(corners[1], corners[3]);
-//     renderLine(corners[3], corners[2]);
-//     renderLine(corners[2], corners[0]);
-
-//     // Draw far clip plane
-//     setColor(RendererConstants::DEBUG_COLOR);
-//     renderLine(corners[4], corners[5]);
-//     renderLine(corners[5], corners[7]);
-//     renderLine(corners[7], corners[6]);
-//     renderLine(corners[6], corners[4]);
-
-//     // Draw connecting lines between near and far planes
-//     setColor(RendererConstants::FRUSTRUM_COLOR);
-//     renderLine(corners[0], corners[4]);
-//     renderLine(corners[1], corners[5]);
-//     renderLine(corners[2], corners[6]);
-//     renderLine(corners[3], corners[7]);
-// }
-
-// // TODO: remove?
-// void Renderer::renderNormal(const Vec3& start, const Vec3& normal) const {
-//     Vec3 end = start + normal * 20.0f; // Scale for visibility
-//     renderLine(start, end);
-// }
-
-// void Renderer::renderStepByStep(const Scene& scene, ViewFrustum& frustum, Camera& camera, const RenderOptions& options) {
-//     LOG("Rendering initial frame:");
-//     frustum.update(camera);
-//     clear();
-//     renderScene(scene, frustum, camera, options);
-//     present();
-
-//     // Test moving forward
-//     for (int step = 1; step <= 3; ++step) {
-//         camera.moveForward(1.0f);
-//         LOG_ARGS("Camera position after moving forward (step ", step, "):", camera.getPosition().x, camera.getPosition().y, camera.getPosition().z);
-//         frustum.update(camera);
-//         clear();
-//         LOG_ARGS("Rendering frame after forward step ", step, ":");
-//         renderScene(scene, frustum, camera, options);
-//         present();
-//     }
-
-//     // Reset camera position
-//     camera.position = Vec3(0.0f, 0.0f, 0.0f);
-
-//     // Test moving forward
-//     for (int step = 1; step <= 3; ++step) {
-//         camera.moveBackward(1.0f);
-//         LOG_ARGS("Camera position after moving backward (step ", step, "):", camera.getPosition().x, camera.getPosition().y, camera.getPosition().z);
-//         frustum.update(camera);
-//         clear();
-//         LOG_ARGS("Rendering frame after backward step ", step, ":");
-//         renderScene(scene, frustum, camera, options);
-//         present();
-//     }
-
-//     // Reset camera position
-//     camera.position = Vec3(0.0f, 0.0f, 0.0f);
-
-//     // Test moving left
-//     for (int step = 1; step <= 3; ++step) {
-//         camera.moveLeft(1.0f);
-//         LOG_ARGS("Camera position after moving left (step ", step, "):", camera.getPosition().x, camera.getPosition().y, camera.getPosition().z);
-//         frustum.update(camera);
-//         clear();
-//         LOG_ARGS("Rendering frame after left step ", step, ":");
-//         renderScene(scene, frustum, camera, options);
-//         present();
-//     }
-
-//     // Reset camera position
-//     camera.position = Vec3(0.0f, 0.0f, 0.0f);
-
-//     // Test rotating right
-//     for (int step = 1; step <= 3; ++step) {
-//         camera.turnRight(0.1f);
-//         LOG_ARGS("Camera direction after turning right (step ", step, "):", camera.getDirection().x, camera.getDirection().y, camera.getDirection().z);
-//         frustum.update(camera);
-//         clear();
-//         LOG_ARGS("Rendering frame after turning right step ", step, ":");
-//         renderScene(scene, frustum, camera, options);
-//         present();
-//     }
-
-//     // Reset camera direction
-//     camera.direction = Vec3(0.0f, 0.0f, -1.0f);
-// }

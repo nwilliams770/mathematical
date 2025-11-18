@@ -50,8 +50,6 @@ class Polygon : public Object {
 
     std::vector<Vec3> toPolygon() const override { return points; }
 
-    void render(const Renderer& renderer, const Camera& camera,const RenderOptions& options) override;
-
   private:
     std::vector<Vec3> points;
     // TODO: remove?

@@ -6,10 +6,9 @@
 #include "render_options.hpp"
 #include "vec3.hpp"
 #include "camera.hpp"
+#include "renderer.hpp"
 
 class RenderOptions;
-class Renderer; // Forward declaration of Renderer
-// only referencing so just needs to know about its existence
 
 class Object {
   public:
@@ -18,11 +17,20 @@ class Object {
 
     void setColor(const Color& color) { this->color = color; }
     Color getColor() const { return color; }
+    Color getRenderColor(const Camera& camera) const
+    {
+      float distance = calculateDistance(camera);
+      int distanceOpacity = Renderer::calculateOpacity(distance, camera.getFrustum());
+      int renderOpacity = (color.getOpacity() * distanceOpacity) / 255; // TODO make const
+
+      Color renderColor = color;
+      renderColor.setOpacity(renderOpacity);
+
+      return renderColor;
+    }
 
     virtual json toJSON() const = 0;
     virtual void fromJSON(const json& j) = 0;
-
-    virtual void render(const Renderer& renderer, const Camera& camera,const RenderOptions& options) = 0;
 
     virtual Vec3 getMin() const = 0;
     virtual Vec3 getMax() const = 0;
